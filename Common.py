@@ -23,9 +23,28 @@ class Bowler:
         self.runs_given = runs_given
 
 
+class InningsScore:
+    def __init__(self, number, team,
+                 runs_scored, wickets_lost, overs_played,
+                 batsmen_score=None, bowlers_score=None):
+        if batsmen_score is None:
+            batsmen_score = []
+        if bowlers_score is None:
+            bowlers_score = []
+        self.number = number
+        self.team = team
+        self.runs_scored = runs_scored
+        self.wickets_lost = wickets_lost
+        self.overs_played = overs_played
+        self.batsmen_score = batsmen_score
+        self.bowlers_score = bowlers_score
+
+
 class Match:
     def __init__(self, title="", date="",
                  format="", teams=None, venue="", result="", scores=None):
+        # scores is a list of InningsScore
+        # teams is a list of playing team names
         if scores is None:
             scores = []
         if teams is None:
