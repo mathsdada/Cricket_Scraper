@@ -5,6 +5,19 @@ from bs4 import BeautifulSoup
 class Common:
     home_page = "http://www.cricbuzz.com"
     match_formats = ["T20", "ODI", "TEST"]
+    ball_outcome_mapping = {
+        # Please do not change this order. It will cause regression..
+        "out ": {'runs': 0, 'balls': 1, 'wicket': True, 'no_ball': False},
+        "no ball": {'runs': 0, 'balls': 1, 'wicket': False, 'no_ball': True},
+        "wide": {'runs': 0, 'balls': 0, 'wicket': False, 'no_ball': False},
+        "byes": {'runs': 0, 'balls': 1, 'wicket': False, 'no_ball': False},
+        "SIX": {'runs': 6, 'balls': 1, 'wicket': False, 'no_ball': False},
+        "FOUR": {'runs': 4, 'balls': 1, 'wicket': False, 'no_ball': False},
+        "1 run": {'runs': 1, 'balls': 1, 'wicket': False, 'no_ball': False},
+        "2 runs": {'runs': 2, 'balls': 1, 'wicket': False, 'no_ball': False},
+        "3 runs": {'runs': 3, 'balls': 1, 'wicket': False, 'no_ball': False},
+        "no run": {'runs': 0, 'balls': 1, 'wicket': False, 'no_ball': False},
+    }
 
     @staticmethod
     def get_soup_object(link, retry_count=0):
@@ -114,6 +127,82 @@ class InningsScore:
         self.bowling_scores = bowling_scores
 
 
+class HeadToHead:
+    def __init__(self, batsman, bowler, balls=0, runs=0, wickets=0):
+        self.batsman = batsman
+        self.bowler = bowler
+        self.balls = balls
+        self.runs = runs
+        self.wickets = wickets
+
+    def add_score(self, balls, runs, wicket):
+        self.wickets += wicket
+        self.balls += balls
+        self.runs += runs
+
+
+class Commentary:
+    def __init__(self, link):
+        self.link = link
+        self.html = requests.get(link).text
+        self.commentary_data = []
+        self.head_to_head_object_cache = {}
+        soup = BeautifulSoup(self.html, 'lxml')
+        commentary_blocks = soup.find_all('p', class_='cb-col cb-col-90 cb-com-ln')
+        for commentary_block in reversed(commentary_blocks):
+            ball_commentary = commentary_block.text.split(',')
+            self.commentary_data.append(ball_commentary)
+
+    def __get_head_to_head_object(self, batsman, bowler):
+        if batsman in self.head_to_head_object_cache:
+            if bowler not in self.head_to_head_object_cache[batsman]:
+                self.head_to_head_object_cache[batsman][bowler] = HeadToHead(batsman, bowler)
+        else:
+            self.head_to_head_object_cache[batsman] = {}
+            self.head_to_head_object_cache[batsman][bowler] = HeadToHead(batsman, bowler)
+        return self.head_to_head_object_cache[batsman].get(bowler)
+
+    def __get_outcome_of_a_ball(self, ball_outcome_str, ball_outcome_str_extra):
+        outcome = {'runs': 0, 'balls': 0, 'wicket': False, 'no_ball': False}
+        ball_data_string = ball_outcome_str.strip()
+        ball_data_string_extra = ball_outcome_str_extra.strip()
+        for item in Common.ball_outcome_mapping:
+            if item in ball_data_string:
+                outcome = Common.ball_outcome_mapping[item].copy()
+                break
+        if outcome['no_ball']:
+            outcome_extra = self.__get_outcome_of_a_ball(ball_data_string_extra, "")
+            outcome['runs'] = outcome_extra['runs']
+        if outcome['wicket'] and ("Run Out!!" in ball_data_string):
+            # get number of runs taken before getting out for Run Out!!
+            #  out de Grandhomme Run Out!! de Grandhomme isn't the quickest between the wickets.
+            #  out Negi Run Out!! 1 run completed.
+            outcome['wicket'] = False
+            if " completed." in ball_data_string:
+                outcome_extra = self.__get_outcome_of_a_ball(
+                    ball_data_string.split("Run Out!!")[1].split(" completed.")[0].strip(), "")
+                outcome['runs'] = outcome_extra['runs']
+        return outcome
+
+    def get_head_to_head_data(self):
+        head_to_head_data = []
+        for ball_commentary in self.commentary_data:
+            players = ball_commentary[0].split(" to ")
+            batsman = players[1].strip()
+            bowler = players[0].strip()
+            head_to_head = self.__get_head_to_head_object(batsman, bowler)
+            if len(ball_commentary) > 2:
+                outcome = self.__get_outcome_of_a_ball(ball_commentary[1], ball_commentary[2])
+            else:
+                outcome = self.__get_outcome_of_a_ball(ball_commentary[1], "")
+            head_to_head.add_score(outcome['balls'], outcome['runs'], outcome['wicket'])
+        # Get list of head_to_head objects of this match
+        for batsman in self.head_to_head_object_cache:
+            for bowler in self.head_to_head_object_cache[batsman]:
+                head_to_head_data.append(self.head_to_head_object_cache[batsman][bowler])
+        return head_to_head_data
+
+
 class Match:
     def __extract_innings_total_score(self, innings_batting_block, innings_num, playing_teams):
         innings_score_block = innings_batting_block.find('div', class_='cb-col cb-col-100 cb-scrd-hdr-rw').text
@@ -183,6 +272,10 @@ class Match:
             innings_score_object.set_bowling_scores(self.__extract_innings_bowling_scores(innings_bowling_block))
             self.innings_scores.append(innings_score_object)
 
+    def __extract_head_to_head_data(self):
+        commentary = Commentary(self.match_link)
+        self.head_to_head_data = commentary.get_head_to_head_data()
+
     def __init__(self, match_id, title,
                  format, teams, venue, result, match_link):
         self.match_id = match_id
@@ -193,10 +286,15 @@ class Match:
         self.result = result
         self.match_link = match_link
         self.innings_scores = []
+        self.head_to_head_data = []
         self.__extract_match_scores()
+        self.__extract_head_to_head_data()
 
     def get_match_scores(self):
         return self.innings_scores
+
+    def get_head_to_head_data(self):
+        return self.head_to_head_data
 
 
 class Series:
@@ -241,7 +339,7 @@ class CalenderYear:
         link = Common.home_page + "/cricket-scorecard-archives/" + str(self.year)
         soup = Common.get_soup_object(link)
         series_blocks = soup.find_all('a', class_='text-hvr-underline')
-        for series_block in series_blocks:
+        for index, series_block in enumerate(series_blocks):
             series_link = series_block.get('href')
             if "cricket-series" in series_link:
                 series_id = series_link.split("/")[2]
