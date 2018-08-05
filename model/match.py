@@ -4,7 +4,7 @@ from model.bowler_score import BowlerScore
 from model.commentary import Commentary
 from model.innings_score import InningsScore
 from model.player import Player
-
+import threading
 
 class Match:
     def __extract_innings_total_score(self, innings_batting_block, innings_num, playing_teams):
@@ -27,7 +27,8 @@ class Match:
             player_info_block = batsman_score_block.find('div', class_='cb-col cb-col-27 ')
             if player_info_block is not None:
                 player_id = player_info_block.find('a', href=True).get('href').split("/")[2]
-                player_name = player_info_block.text.strip().split(" (c)")[0].split(" (wk)")[0]
+                player_object = self.squad[player_id]
+
                 runs_scored = batsman_score_block.find('div',
                                                        class_='cb-col cb-col-8 text-right text-bold').text.strip()
                 # (balls, fours, sixes, strikeRate)
@@ -36,7 +37,6 @@ class Match:
                 num_fours = other_score_blocks[1].text.strip()
                 num_sixes = other_score_blocks[2].text.strip()
 
-                player_object = Player(player_name, player_id)
                 batsman_objects.append(BatsmanScore(player_object, runs_scored, balls_played, num_fours, num_sixes))
         return batsman_objects
 
@@ -47,7 +47,8 @@ class Match:
             player_info_block = bowler_score_block.find('div', class_='cb-col cb-col-40')
             if player_info_block is not None:
                 player_id = player_info_block.find('a', href=True).get('href').split("/")[2]
-                player_name = player_info_block.text.strip().split(" (c)")[0].split(" (wk)")[0]
+                player_object = self.squad[player_id]
+
                 wickets_taken = bowler_score_block.find('div',
                                                         class_='cb-col cb-col-8 text-right text-bold').text.strip()
                 # Runs Given and Economy
@@ -58,13 +59,27 @@ class Match:
                 other_score_items = bowler_score_block.find_all('div', class_='cb-col cb-col-8 text-right')
                 overs_bowled = other_score_items[0].text.strip()
 
-                player_object = Player(player_name, player_id)
                 bowler_objects.append(BowlerScore(player_object, overs_bowled, wickets_taken, runs_given, economy))
         return bowler_objects
 
-    def extract_match_scores(self):
+    def extract_match_scores_and_squad(self, series, lock):
         match_score_card_link = Common.home_page + "/api/html/cricket-scorecard/" + str(self.match_id)
         soup = Common.get_soup_object(match_score_card_link)
+        # Extract Match Squad
+        player_blocks = soup.find_all('a', class_='margin0 text-black text-hvr-underline')
+        for player_block in player_blocks:
+            player_id = player_block.get('href').split("/")[2]
+            player_name = player_block.text.strip().split(" (c)")[0].split(" (wk)")[0]
+            lock.acquire()
+            print("{} is holding the lock..".format(threading.current_thread().name))
+            if player_id not in series.squad.keys():
+                series.squad[player_id] = Player(player_name, player_id)
+            print("{} is releasing the lock..".format(threading.current_thread().name))
+            lock.release()
+
+            self.squad[player_id] = series.squad[player_id]
+
+        # Extract Per-Innings Scores
         team_innings = soup.find_all('div', id=True)
         for innings_num, innings_data in enumerate(team_innings):
             innings_bat_bowl_blocks = innings_data.find_all('div', class_='cb-col cb-col-100 cb-ltst-wgt-hdr')
@@ -79,9 +94,9 @@ class Match:
         commentary = Commentary(self.match_link)
         self.head_to_head_data = commentary.get_head_to_head_data()
 
-    def extract_match_data(self):
+    def extract_match_data(self, series, lock):
         print(self.title)
-        self.extract_match_scores()
+        self.extract_match_scores_and_squad(series, lock)
         self.extract_head_to_head_data()
 
     def __init__(self, match_id, title,
@@ -93,9 +108,9 @@ class Match:
         self.venue = venue
         self.result = result
         self.match_link = match_link
+        self.squad = {}
         self.innings_scores = []
         self.head_to_head_data = []
-        # self.extract_match_data()
 
     def get_match_scores(self):
         return self.innings_scores

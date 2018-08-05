@@ -33,6 +33,8 @@ class Series:
         self.series_year = series_year
         self.series_link = series_link
         self.matches_list = []
+        # multiple thread can update squad. so use lock while updating this.
+        self.squad = {}
         # self.__extract_matches_list_of_series()
 
     def get_matches_list(self):
