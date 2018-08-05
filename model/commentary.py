@@ -1,6 +1,5 @@
 import requests
 from bs4 import BeautifulSoup
-
 from common_util import Common
 from model.head_to_head import HeadToHead
 
@@ -16,6 +15,30 @@ class Commentary:
         for commentary_block in reversed(commentary_blocks):
             ball_commentary = commentary_block.text.split(',')
             self.commentary_data.append(ball_commentary)
+
+    def get_head_to_head_data(self):
+        head_to_head_data = []
+        for ball_commentary in self.commentary_data:
+            players = ball_commentary[0].split(" to ")
+            if len(players) < 2:
+                print([ball_commentary, self.link])
+                continue
+            batsman = players[1].strip()
+            bowler = players[0].strip()
+            head_to_head = self.__get_head_to_head_object(batsman, bowler)
+            if len(ball_commentary) >= 3:
+                outcome = self.__get_outcome_of_a_ball(ball_commentary[1], ball_commentary[2])
+            elif len(ball_commentary) >= 2:
+                outcome = self.__get_outcome_of_a_ball(ball_commentary[1], "")
+            else:
+                print([ball_commentary, self.link])
+                continue
+            head_to_head.add_score(outcome['balls'], outcome['runs'], outcome['wicket'])
+        # Get list of head_to_head objects of this match
+        for batsman in self.head_to_head_object_cache:
+            for bowler in self.head_to_head_object_cache[batsman]:
+                head_to_head_data.append(self.head_to_head_object_cache[batsman][bowler])
+        return head_to_head_data
 
     def __get_head_to_head_object(self, batsman, bowler):
         if batsman in self.head_to_head_object_cache:
@@ -47,27 +70,3 @@ class Commentary:
                     ball_data_string.split("Run Out!!")[1].split(" completed.")[0].strip(), "")
                 outcome['runs'] = outcome_extra['runs']
         return outcome
-
-    def get_head_to_head_data(self):
-        head_to_head_data = []
-        for ball_commentary in self.commentary_data:
-            players = ball_commentary[0].split(" to ")
-            if len(players) < 2:
-                print([ball_commentary, self.link])
-                continue
-            batsman = players[1].strip()
-            bowler = players[0].strip()
-            head_to_head = self.__get_head_to_head_object(batsman, bowler)
-            if len(ball_commentary) >= 3:
-                outcome = self.__get_outcome_of_a_ball(ball_commentary[1], ball_commentary[2])
-            elif len(ball_commentary) >= 2:
-                outcome = self.__get_outcome_of_a_ball(ball_commentary[1], "")
-            else:
-                print([ball_commentary, self.link])
-                continue
-            head_to_head.add_score(outcome['balls'], outcome['runs'], outcome['wicket'])
-        # Get list of head_to_head objects of this match
-        for batsman in self.head_to_head_object_cache:
-            for bowler in self.head_to_head_object_cache[batsman]:
-                head_to_head_data.append(self.head_to_head_object_cache[batsman][bowler])
-        return head_to_head_data

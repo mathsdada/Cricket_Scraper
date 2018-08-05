@@ -1,10 +1,25 @@
 from common_util import Common
 from model.match import Match
+from model.player import Player
 
 
 class Series:
-    def extract_matches_list_of_series(self):
-        print(self.series_title)
+    def __init__(self, series_id, series_title, series_year, series_link):
+        self.series_id = series_id
+        self.series_title = series_title
+        self.series_year = series_year
+        self.series_link = series_link
+        self.matches_list = []
+        self.squad = {}
+
+    def extract_series_data(self):
+        self.__extract_series_squad()
+        self.__extract_matches_list_of_series()
+
+    def get_matches_list(self):
+        return self.matches_list
+
+    def __extract_matches_list_of_series(self):
         soup = Common.get_soup_object(self.series_link)
         series_formats = \
             soup.find('div', class_='cb-col-100 cb-col cb-nav-main cb-bg-white').find('div').text.split(".")[0]
@@ -27,15 +42,12 @@ class Series:
                                          match_status, Common.home_page + match_link)
                     self.matches_list.append(match_object)
 
-    def __init__(self, series_id, series_title, series_year, series_link):
-        self.series_id = series_id
-        self.series_title = series_title
-        self.series_year = series_year
-        self.series_link = series_link
-        self.matches_list = []
-        # multiple thread can update squad. so use lock while updating this.
-        self.squad = {}
-        # self.__extract_matches_list_of_series()
-
-    def get_matches_list(self):
-        return self.matches_list
+    def __extract_series_squad(self):
+        series_squad_link = self.series_link.replace('/matches', '/squads')
+        soup = Common.get_soup_object(series_squad_link)
+        player_blocks = soup.find_all('a', class_='cb-player-profile text-gray text-hvr-underline')
+        for player_block in player_blocks:
+            player_id = player_block.get('href').split("/")[2]
+            player_name = player_block.text.strip().split(" (c)")[0].split(" (wk)")[0]
+            if player_id not in self.squad.keys():
+                self.squad[player_id] = Player(player_name, player_id)

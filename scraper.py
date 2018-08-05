@@ -6,7 +6,6 @@ from model.calender_year import CalenderYear
 
 class Scraper:
     def __init__(self):
-        self.lock = threading.Lock()
         pass
 
     def get_data(self, year):
@@ -24,9 +23,8 @@ class Scraper:
         series_workers = []
 
         for series in self.calender.get_series_list():
-            print("Adding to series_queue", series.series_title)
             series_queue.put(series)
-            # break
+            break
         for i in range(num_series_threads):
             series_worker = Thread(target=extract_series_data, args=(series_queue,))
             series_worker.setDaemon(True)
@@ -43,11 +41,10 @@ class Scraper:
 
         for series in self.calender.get_series_list():
             for match in series.get_matches_list():
-                print("Adding to match_queue", match.title)
                 match_queue.put([match, series])
 
         for i in range(num_match_threads):
-            match_worker = Thread(target=extract_match_data, args=(match_queue,self.lock))
+            match_worker = Thread(target=extract_match_data, args=(match_queue,))
             match_worker.setDaemon(True)
             match_worker.start()
             match_workers.append(match_worker)
@@ -62,19 +59,18 @@ def extract_series_data(series_queue):
         print("extract_series_data: thread={}, depth={}, series={}".format(
             threading.current_thread().name, series_queue.qsize(), series_object.series_title))
         series_queue.task_done()
-        series_object.extract_matches_list_of_series()
+        series_object.extract_series_data()
 
 
-def extract_match_data(match_queue, lock):
+def extract_match_data(match_queue):
     while not match_queue.empty():
         [match_object, series_object] = match_queue.get()
         print("extract_match_data: thread={}, depth={}, match={}".format(
             threading.current_thread().name, match_queue.qsize(), match_object.title))
         match_queue.task_done()
-        match_object.extract_match_data(series_object, lock)
+        match_object.extract_match_data(series_object.squad)
 
 
 scraper = Scraper()
 scraper.get_data(2018)
-print("Done")
 print("Hellowwwww")

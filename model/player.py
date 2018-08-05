@@ -2,6 +2,14 @@ from common_util import Common
 
 
 class Player:
+    def __init__(self, name, player_id):
+        self.name = name
+        self.player_id = player_id
+        self.role = '--'
+        self.batting_style = '--'
+        self.bowling_style = '--'
+        self.__extract_player_profile()
+
     def __extract_player_profile(self):
         default_player_profile = {'Role': '--', 'Batting Style': '--', 'Bowling Style': '--'}
         default_keys = default_player_profile.keys()
@@ -16,11 +24,3 @@ class Player:
         self.role = default_player_profile['Role']
         self.batting_style = default_player_profile['Batting Style']
         self.bowling_style = default_player_profile['Bowling Style']
-
-    def __init__(self, name, player_id):
-        self.name = name
-        self.player_id = player_id
-        self.role = '--'
-        self.batting_style = '--'
-        self.bowling_style = '--'
-        self.__extract_player_profile()
