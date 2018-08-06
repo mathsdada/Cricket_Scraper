@@ -76,3 +76,27 @@ class Common:
         else:
             match_winner = ""
         return match_winner
+
+    @staticmethod
+    def get_short_names_of(name):
+        # This function assumes maximum of 3 words in name.
+        # Raise exception if name has more than 3 words
+        names = [name]
+        words = name.split()
+        num_words = len(words)
+        if num_words > 3:
+            raise ValueError("Number of words in name(={}) are more than 3".format(name))
+        for word in words:
+            names.append(word)
+        if num_words == 2:
+            names.append(words[0][0].upper() + ' ' + words[1])
+            # names.append(words[0] + ' ' + words[1][0].upper())
+        if num_words == 3:
+            names.append(words[0] + ' ' + words[1])
+            names.append(words[0] + ' ' + words[2])
+            names.append(words[1] + ' ' + words[2])
+            names.append(words[0][0].upper() + ' ' + words[1])
+            names.append(words[0][0].upper() + ' ' + words[2])
+            names.append(words[1][0].upper() + ' ' + words[2])
+            names.append(words[0][0].upper() + words[1][0].upper() + ' ' + words[2])
+        return names

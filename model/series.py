@@ -48,6 +48,6 @@ class Series:
         player_blocks = soup.find_all('a', class_='cb-player-profile text-gray text-hvr-underline')
         for player_block in player_blocks:
             player_id = player_block.get('href').split("/")[2]
-            player_name = player_block.text.strip().split(" (c)")[0].split(" (wk)")[0]
+            player_name = player_block.text.strip().split("(c)")[0].split(" (c)")[0].split("(wk)")[0].split(" (wk)")[0]
             if player_id not in self.squad.keys():
                 self.squad[player_id] = Player(player_name, player_id)

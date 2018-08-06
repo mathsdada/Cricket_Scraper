@@ -47,7 +47,7 @@ class Match:
             self.innings_scores.append(innings_score_object)
 
     def __extract_head_to_head_data(self):
-        commentary = Commentary(self.match_link)
+        commentary = Commentary(self.match_link, self.squad)
         self.head_to_head_data = commentary.get_head_to_head_data()
 
     def __extract_innings_total_score(self, innings_batting_block, innings_num, playing_teams):

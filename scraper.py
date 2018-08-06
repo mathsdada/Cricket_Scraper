@@ -24,6 +24,7 @@ class Scraper:
 
         for series in self.calender.get_series_list():
             series_queue.put(series)
+            # TODO Remove This
             break
         for i in range(num_series_threads):
             series_worker = Thread(target=extract_series_data, args=(series_queue,))

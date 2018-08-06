@@ -8,6 +8,7 @@ class Player:
         self.role = '--'
         self.batting_style = '--'
         self.bowling_style = '--'
+        self.short_names = Common.get_short_names_of(name)
         self.__extract_player_profile()
 
     def __extract_player_profile(self):
