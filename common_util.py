@@ -20,6 +20,26 @@ class Common:
     }
 
     @staticmethod
+    def replace_team_name(team_name):
+        return {
+            "West Indies": "Windies",
+            "UAE": "United Arab Emirates",
+            "HK": "Hong Kong",
+            "Marylebone Cricket Club World XI": "MCC World XI",
+            "Pakistan U-19": "Pakistan U19",
+            "West Indies Women": "Windies Women",
+            "Rising Pune Supergiants": "Rising Pune Supergiant",
+            "St Lucia Zouks": "St Lucia Stars",
+            "Cobras": "Cape Cobras",
+            "West Indies U19": "Windies U19",
+            "West Indies A": "Windies A",
+            "Trinidad & Tobago": "Trinidad and Tobago",
+            "Wayamba": "Wayamba Elevens",
+            "RSA": "South Africa",
+            "SL": "Sri Lanka"
+        }.get(team_name, team_name)
+
+    @staticmethod
     def get_soup_object(link, retry_count=0):
         try:
             html_page = requests.get(link)
@@ -74,8 +94,8 @@ class Common:
             else:
                 match_winner = match_result.split(" Won by ")[0]
         else:
-            match_winner = ""
-        return match_winner
+            match_winner = "--"
+        return Common.replace_team_name(match_winner.strip())
 
     @staticmethod
     def get_short_names_of(name):

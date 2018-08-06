@@ -35,11 +35,12 @@ class Series:
                     match_link = match_title.get('href')
                     match_title = match_title.text
                     match_status = Common.get_match_outcome(match_result.text)
+                    match_winning_team = Common.get_match_winning_team(match_status, match_result.text)
                     match_id = match_link.split("/")[2]
                     playing_teams = match_title.split(",")[0].split(" vs ")
                     match_object = Match(match_id, match_title, match_format,
                                          playing_teams, match_venue.text,
-                                         match_status, Common.home_page + match_link)
+                                         match_status, Common.home_page + match_link, match_winning_team)
                     self.matches_list.append(match_object)
 
     def __extract_series_squad(self):

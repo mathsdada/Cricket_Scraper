@@ -3,11 +3,11 @@ from model.batsman_score import BatsmanScore
 from model.bowler_score import BowlerScore
 from model.commentary import Commentary
 from model.innings_score import InningsScore
+from datetime import datetime
 
 
 class Match:
-    def __init__(self, match_id, title,
-                 format, teams, venue, result, match_link):
+    def __init__(self, match_id, title, format, teams, venue, result, match_link, winning_team):
         self.match_id = match_id
         self.title = title
         self.format = format
@@ -15,12 +15,14 @@ class Match:
         self.venue = venue
         self.result = result
         self.match_link = match_link
+        self.date = 0  # epoch time
+        self.winning_team = winning_team
         self.squad = {}
         self.innings_scores = []
         self.head_to_head_data = []
 
     def extract_match_data(self, squad):
-        self.__extract_match_scores_and_squad(squad)
+        self.__extract_match_info_squad_and_scores(squad)
         self.__extract_head_to_head_data()
 
     def get_match_scores(self):
@@ -29,9 +31,17 @@ class Match:
     def get_head_to_head_data(self):
         return self.head_to_head_data
 
-    def __extract_match_scores_and_squad(self, squad):
+    def __extract_match_info_squad_and_scores(self, squad):
         match_score_card_link = Common.home_page + "/api/html/cricket-scorecard/" + str(self.match_id)
         soup = Common.get_soup_object(match_score_card_link)
+        # Extract Match Info
+        match_info_blocks = soup.find_all('div', class_='cb-col cb-col-73')
+        # Examples: 1) Friday, January 05, 2018 - Tuesday, January 09, 2018
+        #           2) Tuesday, February 13, 2018
+        match_date_string = match_info_blocks[1].text.split(" - ")[0].strip()
+        # convert time to epoch time
+        self.date = int(datetime.strptime(match_date_string, "%A, %B %d, %Y").timestamp())
+
         # Extract Match Squad
         player_blocks = soup.find_all('a', class_='margin0 text-black text-hvr-underline')
         for player_block in player_blocks:
