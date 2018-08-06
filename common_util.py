@@ -3,7 +3,7 @@ from bs4 import BeautifulSoup
 
 
 class Common:
-    home_page = "http://www.cricbuzz.com"
+    home_page = "https://www.cricbuzz.com"
     match_formats = ["T20", "ODI", "TEST"]
     ball_outcome_mapping = {
         # Please do not change this order. It will cause regression..

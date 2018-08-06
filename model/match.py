@@ -33,7 +33,10 @@ class Match:
         match_score_card_link = Common.home_page + "/api/html/cricket-scorecard/" + str(self.match_id)
         soup = Common.get_soup_object(match_score_card_link)
         # Extract Match Squad
-        self.squad = squad.copy()
+        player_blocks = soup.find_all('a', class_='margin0 text-black text-hvr-underline')
+        for player_block in player_blocks:
+            player_id = player_block.get('href').split("/")[2]
+            self.squad[player_id] = squad[player_id]
 
         # Extract Per-Innings Scores
         team_innings = soup.find_all('div', id=True)
