@@ -73,8 +73,6 @@ class Match:
             player_info_block = batsman_score_block.find('div', class_='cb-col cb-col-27 ')
             if player_info_block is not None:
                 player_id = player_info_block.find('a', href=True).get('href').split("/")[2]
-                player_object = self.squad[player_id]
-
                 runs_scored = batsman_score_block.find('div',
                                                        class_='cb-col cb-col-8 text-right text-bold').text.strip()
                 # (balls, fours, sixes, strikeRate)
@@ -83,7 +81,7 @@ class Match:
                 num_fours = other_score_blocks[1].text.strip()
                 num_sixes = other_score_blocks[2].text.strip()
 
-                batsman_objects.append(BatsmanScore(player_object, runs_scored, balls_played, num_fours, num_sixes))
+                batsman_objects.append(BatsmanScore(player_id, runs_scored, balls_played, num_fours, num_sixes))
         return batsman_objects
 
     def __extract_innings_bowling_scores(self, innings_bowling_block):
@@ -93,8 +91,6 @@ class Match:
             player_info_block = bowler_score_block.find('div', class_='cb-col cb-col-40')
             if player_info_block is not None:
                 player_id = player_info_block.find('a', href=True).get('href').split("/")[2]
-                player_object = self.squad[player_id]
-
                 wickets_taken = bowler_score_block.find('div',
                                                         class_='cb-col cb-col-8 text-right text-bold').text.strip()
                 # Runs Given and Economy
@@ -105,5 +101,5 @@ class Match:
                 other_score_items = bowler_score_block.find_all('div', class_='cb-col cb-col-8 text-right')
                 overs_bowled = other_score_items[0].text.strip()
 
-                bowler_objects.append(BowlerScore(player_object, overs_bowled, wickets_taken, runs_given, economy))
+                bowler_objects.append(BowlerScore(player_id, overs_bowled, wickets_taken, runs_given, economy))
         return bowler_objects
