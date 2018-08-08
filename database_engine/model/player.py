@@ -1,4 +1,4 @@
-class player:
+class Player:
     def __init__(self, id, name, role, batting_style, bowling_style):
         self.id = id
         self.name = name

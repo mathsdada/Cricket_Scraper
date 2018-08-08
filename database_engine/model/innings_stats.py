@@ -1,4 +1,4 @@
-class innings_stats:
+class InningsStats:
     def __init__(self, match_id, innings_num, batting_team, bowling_team, runs, wickets, overs):
         self.match_id = match_id
         self.innings_num = innings_num

@@ -1,4 +1,4 @@
-class match:
+class Match:
     def __init__(self, id, title, date, format, venue, playing_teams, winning_team, outcome, series_id):
         self.id = id
         self.title = title
