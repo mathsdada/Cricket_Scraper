@@ -1,7 +1,5 @@
-import requests
-from bs4 import BeautifulSoup
-from common_util import Common
-from model.head_to_head import HeadToHead
+from scraper_engine.common_util import Common
+from scraper_engine.model.head_to_head import HeadToHead
 
 
 class Commentary:
