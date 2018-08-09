@@ -13,5 +13,11 @@ class InningsScore:
     def set_batting_scores(self, batting_scores):
         self.batting_scores = batting_scores
 
+    def get_batting_scores(self):
+        return self.batting_scores
+
     def set_bowling_scores(self, bowling_scores):
         self.bowling_scores = bowling_scores
+
+    def get_bowling_scores(self):
+        return self.bowling_scores

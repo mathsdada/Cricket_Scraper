@@ -72,6 +72,6 @@ def extract_match_data(match_queue):
         match_object.extract_match_data(series_object.squad)
 
 
-scraper = Scraper()
-scraper.get_data(2018)
-print("Hellowwwww")
+# scraper = Scraper()
+# scraper.get_data(2018)
+# print("Hellowwwww")

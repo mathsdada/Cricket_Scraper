@@ -8,12 +8,12 @@ from datetime import datetime
 
 class Match:
     def __init__(self, match_id, title, format, teams, venue, result, match_link, winning_team):
-        self.match_id = match_id
+        self.id = match_id
         self.title = title
         self.format = format
         self.teams = teams
         self.venue = venue
-        self.result = result
+        self.outcome = result
         self.match_link = match_link
         self.date = 0  # epoch time
         self.winning_team = winning_team
@@ -25,14 +25,14 @@ class Match:
         self.__extract_match_info_squad_and_scores(squad)
         self.__extract_head_to_head_data()
 
-    def get_match_scores(self):
+    def get_match_innings_scores(self):
         return self.innings_scores
 
     def get_head_to_head_data(self):
         return self.head_to_head_data
 
     def __extract_match_info_squad_and_scores(self, squad):
-        match_score_card_link = Common.home_page + "/api/html/cricket-scorecard/" + str(self.match_id)
+        match_score_card_link = Common.home_page + "/api/html/cricket-scorecard/" + str(self.id)
         soup = Common.get_soup_object(match_score_card_link)
         # Extract Match Info
         match_info_blocks = soup.find_all('div', class_='cb-col cb-col-73')
