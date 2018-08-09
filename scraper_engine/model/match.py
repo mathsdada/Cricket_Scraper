@@ -39,8 +39,7 @@ class Match:
         # Examples: 1) Friday, January 05, 2018 - Tuesday, January 09, 2018
         #           2) Tuesday, February 13, 2018
         match_date_string = match_info_blocks[1].text.split(" - ")[0].strip()
-        # convert time to epoch time
-        self.date = int(datetime.strptime(match_date_string, "%A, %B %d, %Y").timestamp())
+        self.date = datetime.strptime(match_date_string, "%A, %B %d, %Y").strftime("%Y-%m-%d")
 
         # Extract Match Squad
         player_blocks = soup.find_all('a', class_='margin0 text-black text-hvr-underline')
