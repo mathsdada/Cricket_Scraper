@@ -24,9 +24,9 @@ batting_stats_table = BattingStats(database.cursor)
 for series in calender_year.get_series_list():
     series_table.insert(series.series_id, series.series_title, series.series_year)
     for match in series.get_matches_list():
-        match_table.insert(match.match_id, match.title, match.date, match.format, match.venue,
+        match_table.insert(match.id, match.title, match.date, match.format, match.venue,
                            match.teams,
-                           match.winning_team, match.result, series.series_id)
+                           match.winning_team, match.outcome, series.series_id)
         for innings_score in match.get_match_innings_scores():
             innings_stats_table.insert(match.id, innings_score.number, innings_score.batting_team,
                                        innings_score.bowling_team, innings_score.runs_scored,
