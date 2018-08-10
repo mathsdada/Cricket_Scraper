@@ -1,7 +1,7 @@
 from scraper_engine.common_util import Common
 from scraper_engine.model.match import Match
-from scraper_engine.model.player import Player
-
+import logging
+import threading
 
 class Series:
     def __init__(self, series_id, series_title, series_year, series_link):
@@ -11,8 +11,11 @@ class Series:
         self.series_link = series_link
         self.matches_list = []
         self.squad = {}
+        self.logger = logging.getLogger(__name__)
 
     def extract_series_data(self):
+        self.logger.debug("extract_series_data: thread={}, series={}".format(
+            threading.current_thread().name, self.series_title))
         self.__extract_matches_list_of_series()
 
     def get_matches_list(self):

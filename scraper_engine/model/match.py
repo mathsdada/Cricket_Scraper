@@ -6,6 +6,8 @@ from scraper_engine.model.innings_score import InningsScore
 from scraper_engine.model.player import Player
 from datetime import datetime
 import threading
+import logging
+
 
 class Match:
     def __init__(self, match_id, title, format, teams, venue, result, match_link, winning_team):
@@ -21,9 +23,11 @@ class Match:
         self.squad = {}
         self.innings_scores = []
         self.head_to_head_data = []
+        self.logger = logging.getLogger(__name__)
 
     def extract_match_data(self, series_squad):
-        print("extract_match_data: match_link = {}, thread = {}".format(self.match_link, threading.current_thread().name))
+        self.logger.debug(
+            "extract_match_data: match_link = {}, thread = {}".format(self.match_link, threading.current_thread().name))
         self.__extract_match_info_squad_and_scores(series_squad)
         self.__extract_head_to_head_data()
 

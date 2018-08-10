@@ -25,6 +25,7 @@ class Common:
         "Shardul Thakur":   "SN Thakur",
         "Cephas Zhuwao":    "Zhuwawo",
         "Rohit Paudel":     "Rohit Kumar",
+        "D Arcy Short":     "D'Arcy Shor",
     }
 
     @staticmethod
@@ -69,7 +70,7 @@ class Common:
         match_type = match_title.split(",")[1].lower()
         series_formats = series_formats.lower()
         if "practice" in match_title or "warm-up" in match_title:
-            return "UNKNOWN"
+            return None
         elif " t20" in match_type:
             return Common.match_formats[0]
         elif " odi" in match_type:

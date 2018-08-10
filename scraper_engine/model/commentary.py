@@ -1,6 +1,7 @@
 from scraper_engine.common_util import Common
 from scraper_engine.model.head_to_head import HeadToHead
 import threading
+import logging
 
 
 class Commentary:
@@ -10,6 +11,7 @@ class Commentary:
         self.commentary_data = []
         self.head_to_head_object_cache = {}
         self.player_id_map = {}
+        self.logger = logging.getLogger(__name__)
         soup = Common.get_soup_object(self.link)
         commentary_blocks = soup.find_all('p', class_='cb-col cb-col-90 cb-com-ln')
         for commentary_block in reversed(commentary_blocks):
@@ -24,8 +26,10 @@ class Commentary:
             if name in player.short_names:
                 self.player_id_map[name] = player_id
                 return player_id
-        print("Error: {} is not in the list processing by {}..".format(
+        self.logger.debug("Error: {} is not in the list processing by {}..".format(
             name, threading.current_thread().name))
+        # print("Error: {} is not in the list processing by {}..".format(
+        #     name, threading.current_thread().name))
         return -1
 
     def get_head_to_head_data(self):

@@ -2,11 +2,13 @@ from queue import Queue
 from threading import Thread
 import threading
 from scraper_engine.model.calender_year import CalenderYear
+import logging.config
+import os
 
 
 class Scraper:
     def __init__(self):
-        pass
+        self.logger = logging.getLogger(__name__)
 
     def get_data(self, year):
         self.calender = CalenderYear(year)
@@ -33,14 +35,15 @@ class Scraper:
 def extract_series_data(series_queue):
     while not series_queue.empty():
         series_object = series_queue.get()
-        print("extract_series_data: thread={}, depth={}, series={}".format(
-            threading.current_thread().name, series_queue.qsize(), series_object.series_title))
         series_queue.task_done()
         series_object.extract_series_data()
         for match_object in series_object.get_matches_list():
             match_object.extract_match_data(series_object.squad)
 
 
+file_dir = os.path.split(os.path.realpath(__file__))[0]
+file_name = file_dir+'\logs.txt'
+logging.basicConfig(filename=file_name, level=logging.DEBUG)
 scraper = Scraper()
 scraper.get_data(2018)
 print("Hellowwwww")
