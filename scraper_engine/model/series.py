@@ -37,7 +37,7 @@ class Series:
             if (match_title is not None) and ("cricket-scores" in match_title.get('href')) and \
                     (match_venue is not None) and (match_outcome is not None):
                 match_format = Common.get_match_format(match_title.text, series_formats)
-                if match_format in Common.match_formats:
+                if match_format is not None:
                     match_link = match_title.get('href')
                     match_title = match_title.text
                     match_winning_team = Common.get_match_winning_team(match_outcome, match_outcome_block.text)

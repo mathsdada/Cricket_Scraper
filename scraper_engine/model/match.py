@@ -23,6 +23,7 @@ class Match:
         self.squad = {}
         self.innings_scores = []
         self.head_to_head_data = []
+        self.is_valid = True
         self.logger = logging.getLogger(__name__)
 
     def extract_match_data(self, series_squad):
@@ -48,14 +49,13 @@ class Match:
         squad_blocks = soup.find_all('div', class_='cb-col cb-col-73 ')
         for block in squad_blocks:
             a_tag_blocks = block.find_all('a', class_='margin0 text-black text-hvr-underline')
-            if len(a_tag_blocks) == 11:
-                for player_block in a_tag_blocks:
-                    player_id = player_block.get('href').split("/")[2]
-                    player_name = player_block.text \
-                        .split("(c)")[0].split("(wk)")[0].split("(c & wk)")[0].strip()
-                    if player_id not in series_squad.keys():
-                        series_squad[player_id] = Player(player_name, player_id)
-                    self.squad[player_id] = series_squad[player_id]
+            for player_block in a_tag_blocks:
+                player_id = player_block.get('href').split("/")[2]
+                player_name = player_block.text \
+                    .split("(c)")[0].split("(wk)")[0].split("(c & wk)")[0].strip()
+                if player_id not in series_squad.keys():
+                    series_squad[player_id] = Player(player_name, player_id)
+                self.squad[player_id] = series_squad[player_id]
 
     def __extract_match_info_squad_and_scores(self, series_squad):
         match_score_card_link = Common.home_page + "/api/html/cricket-scorecard/" + str(self.id)
