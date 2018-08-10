@@ -3,5 +3,5 @@ class HeadToHeadStats:
         self.cursor = cursor
 
     def insert(self, bowler_id, batsman_id, match_id, runs, balls, wickets):
-        sql = """INSERT INTO head_to_head_stats VALUES (?, ?, ?, ?, ?, ?, ?)"""
+        sql = """INSERT INTO head_to_head_stats VALUES (%s, %s, %s, %s, %s, %s)"""
         self.cursor.execute(sql, (bowler_id, batsman_id, balls, runs, wickets, match_id))

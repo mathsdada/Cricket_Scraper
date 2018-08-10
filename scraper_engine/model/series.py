@@ -13,7 +13,6 @@ class Series:
         self.squad = {}
 
     def extract_series_data(self):
-        self.__extract_series_squad()
         self.__extract_matches_list_of_series()
 
     def get_matches_list(self):
@@ -27,28 +26,21 @@ class Series:
         for match_info_element in match_info_elements:
             match_title = match_info_element.find('a', class_='text-hvr-underline')
             match_venue = match_info_element.find('div')
-            match_result = match_info_element.find('a', class_='cb-text-link')
+            match_outcome_block = match_info_element.find('a', class_='cb-text-link')
+            if match_outcome_block is not None:
+                match_outcome = Common.get_match_outcome(match_outcome_block.text)
+            else:
+                match_outcome = None
             if (match_title is not None) and ("cricket-scores" in match_title.get('href')) and \
-                    (match_venue is not None) and (match_result is not None):
+                    (match_venue is not None) and (match_outcome is not None):
                 match_format = Common.get_match_format(match_title.text, series_formats)
                 if match_format in Common.match_formats:
                     match_link = match_title.get('href')
                     match_title = match_title.text
-                    match_status = Common.get_match_outcome(match_result.text)
-                    match_winning_team = Common.get_match_winning_team(match_status, match_result.text)
+                    match_winning_team = Common.get_match_winning_team(match_outcome, match_outcome_block.text)
                     match_id = match_link.split("/")[2]
                     playing_teams = match_title.split(",")[0].split(" vs ")
                     match_object = Match(match_id, match_title, match_format,
                                          playing_teams, match_venue.text,
-                                         match_status, Common.home_page + match_link, match_winning_team)
+                                         match_outcome, Common.home_page + match_link, match_winning_team)
                     self.matches_list.append(match_object)
-
-    def __extract_series_squad(self):
-        series_squad_link = self.series_link.replace('/matches', '/squads')
-        soup = Common.get_soup_object(series_squad_link)
-        player_blocks = soup.find_all('a', class_='cb-player-profile text-gray text-hvr-underline')
-        for player_block in player_blocks:
-            player_id = player_block.get('href').split("/")[2]
-            player_name = player_block.text.strip().split("(c)")[0].split(" (c)")[0].split("(wk)")[0].split(" (wk)")[0]
-            if player_id not in self.squad.keys():
-                self.squad[player_id] = Player(player_name, player_id)

@@ -1,5 +1,6 @@
 from scraper_engine.common_util import Common
 from scraper_engine.model.head_to_head import HeadToHead
+import threading
 
 
 class Commentary:
@@ -23,7 +24,9 @@ class Commentary:
             if name in player.short_names:
                 self.player_id_map[name] = player_id
                 return player_id
-        raise Exception("{} is not in the list.. Please check".format(name))
+        print("Error: {} is not in the list processing by {}..".format(
+            name, threading.current_thread().name))
+        return -1
 
     def get_head_to_head_data(self):
         head_to_head_data = []

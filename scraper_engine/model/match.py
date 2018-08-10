@@ -3,8 +3,9 @@ from scraper_engine.model.batsman_score import BatsmanScore
 from scraper_engine.model.bowler_score import BowlerScore
 from scraper_engine.model.commentary import Commentary
 from scraper_engine.model.innings_score import InningsScore
+from scraper_engine.model.player import Player
 from datetime import datetime
-
+import threading
 
 class Match:
     def __init__(self, match_id, title, format, teams, venue, result, match_link, winning_team):
@@ -21,8 +22,9 @@ class Match:
         self.innings_scores = []
         self.head_to_head_data = []
 
-    def extract_match_data(self, squad):
-        self.__extract_match_info_squad_and_scores(squad)
+    def extract_match_data(self, series_squad):
+        print("extract_match_data: match_link = {}, thread = {}".format(self.match_link, threading.current_thread().name))
+        self.__extract_match_info_squad_and_scores(series_squad)
         self.__extract_head_to_head_data()
 
     def get_match_innings_scores(self):
@@ -31,22 +33,33 @@ class Match:
     def get_head_to_head_data(self):
         return self.head_to_head_data
 
-    def __extract_match_info_squad_and_scores(self, squad):
-        match_score_card_link = Common.home_page + "/api/html/cricket-scorecard/" + str(self.id)
-        soup = Common.get_soup_object(match_score_card_link)
-        # Extract Match Info
+    def __extract_match_info(self, soup):
         match_info_blocks = soup.find_all('div', class_='cb-col cb-col-73')
         # Examples: 1) Friday, January 05, 2018 - Tuesday, January 09, 2018
         #           2) Tuesday, February 13, 2018
         match_date_string = match_info_blocks[1].text.split(" - ")[0].strip()
         self.date = datetime.strptime(match_date_string, "%A, %B %d, %Y").strftime("%Y-%m-%d")
 
-        # Extract Match Squad
-        player_blocks = soup.find_all('a', class_='margin0 text-black text-hvr-underline')
-        for player_block in player_blocks:
-            player_id = player_block.get('href').split("/")[2]
-            self.squad[player_id] = squad[player_id]
+    def __extract_match_squad(self, soup, series_squad):
+        squad_blocks = soup.find_all('div', class_='cb-col cb-col-73 ')
+        for block in squad_blocks:
+            a_tag_blocks = block.find_all('a', class_='margin0 text-black text-hvr-underline')
+            if len(a_tag_blocks) == 11:
+                for player_block in a_tag_blocks:
+                    player_id = player_block.get('href').split("/")[2]
+                    player_name = player_block.text \
+                        .split("(c)")[0].split("(wk)")[0].split("(c & wk)")[0].strip()
+                    if player_id not in series_squad.keys():
+                        series_squad[player_id] = Player(player_name, player_id)
+                    self.squad[player_id] = series_squad[player_id]
 
+    def __extract_match_info_squad_and_scores(self, series_squad):
+        match_score_card_link = Common.home_page + "/api/html/cricket-scorecard/" + str(self.id)
+        soup = Common.get_soup_object(match_score_card_link)
+        # Extract Match Info
+        self.__extract_match_info(soup)
+        # Extract Match Squad
+        self.__extract_match_squad(soup, series_squad)
         # Extract Per-Innings Scores
         team_innings = soup.find_all('div', id=True)
         for innings_num, innings_data in enumerate(team_innings):

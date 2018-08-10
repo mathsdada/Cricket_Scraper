@@ -1,5 +1,6 @@
 import requests
 from bs4 import BeautifulSoup
+import threading
 
 
 class Common:
@@ -17,6 +18,13 @@ class Common:
         "2 runs": {'runs': 2, 'balls': 1, 'wicket': False, 'no_ball': False},
         "3 runs": {'runs': 3, 'balls': 1, 'wicket': False, 'no_ball': False},
         "no run": {'runs': 0, 'balls': 1, 'wicket': False, 'no_ball': False},
+    }
+
+    special_players = {
+        "Andrew Balbirnie": "Andy Balbirnie",
+        "Shardul Thakur":   "SN Thakur",
+        "Cephas Zhuwao":    "Zhuwawo",
+        "Rohit Paudel":     "Rohit Kumar",
     }
 
     @staticmethod
@@ -85,6 +93,7 @@ class Common:
         for index, pattern in enumerate(result_pattern):
             if pattern in match_outcome:
                 return result_type[index]
+        return None
 
     @staticmethod
     def get_match_winning_team(match_status, match_result):
@@ -104,8 +113,9 @@ class Common:
         names = [name]
         words = name.split()
         num_words = len(words)
-        if num_words > 3:
-            raise ValueError("Number of words in name(={}) are more than 3".format(name))
+        if num_words > 4:
+            raise ValueError("Number of words in name(={}) are more than 3 . Detected by {}".format(
+                name, threading.current_thread().name))
         for word in words:
             names.append(word)
         if num_words == 2:
@@ -119,4 +129,13 @@ class Common:
             names.append(words[0][0].upper() + ' ' + words[2])
             names.append(words[1][0].upper() + ' ' + words[2])
             names.append(words[0][0].upper() + words[1][0].upper() + ' ' + words[2])
+        if num_words == 4:
+            # Roelof van der Merwe ==> van der Merwe
+            # Timm van der Gugten ==> van der Gugten
+            # Rassie van der Dussen ==> Dussen
+            # ME Yazh Arun Mozhi ==> Yazh Arun Mozhi
+            # Nicky van den Bergh ==> van den Bergh
+            names.append(words[1] + ' ' + words[2] + ' ' + words[3])
+        if name in Common.special_players:
+            names.append(Common.special_players[name])
         return names
