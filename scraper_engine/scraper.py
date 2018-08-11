@@ -43,7 +43,7 @@ def extract_series_data(series_queue):
 
 file_dir = os.path.split(os.path.realpath(__file__))[0]
 file_name = file_dir+'\logs.txt'
-logging.basicConfig(filename=file_name, level=logging.DEBUG)
+logging.basicConfig(filename=file_name, level=logging.INFO)
 scraper = Scraper()
 scraper.get_data(2018)
 print("Hellowwwww")

@@ -26,7 +26,7 @@ class Commentary:
             if name in player.short_names:
                 self.player_id_map[name] = player_id
                 return player_id
-        self.logger.debug("Error: {} is not in the list processing by {}..".format(
+        self.logger.info("Error: {} is not in the list processing by {}..".format(
             name, threading.current_thread().name))
         # print("Error: {} is not in the list processing by {}..".format(
         #     name, threading.current_thread().name))

@@ -21,53 +21,53 @@ class Common:
     }
 
     special_players = {
-        "Andrew Balbirnie":         ["Andy Balbirnie"],
-        "Shardul Thakur":           ["SN Thakur"],
-        "Cephas Zhuwao":            ["Zhuwawo"],
-        "Rohit Paudel":             ["Rohit Kumar"],
-        "D Arcy Short":             ["D'Arcy Short","DArcy Short"],
-        "Robert ODonnell":          ["Robert O'Donnell"],
-        "Steve OKeefe":             ["O'Keefe"],
-        "Kinchit Shah":             ["KD Shah"],
-        "Jonathon Dean":            ["Jono Dean"],
-        "Misbah-ul-Haq":            ["Misbah"],
+        "Andrew Balbirnie": ["Andy Balbirnie"],
+        "Shardul Thakur": ["SN Thakur"],
+        "Cephas Zhuwao": ["Zhuwawo"],
+        "Rohit Paudel": ["Rohit Kumar"],
+        "D Arcy Short": ["D'Arcy Short", "DArcy Short"],
+        "Robert ODonnell": ["Robert O'Donnell"],
+        "Steve OKeefe": ["O'Keefe"],
+        "Kinchit Shah": ["KD Shah"],
+        "Jonathon Dean": ["Jono Dean"],
+        "Misbah-ul-Haq": ["Misbah"],
         "Nicholas Frederick Kelly": ["Nick Kelly"],
-        "Thomas Smith":             ["Tom Smith"],
-        "SamTruloff":               ["Truloff"],
-        "Athi Maposa":              ["Attie Maposa"],
-        "Petrus van Biljon":        ["Pite van Biljon"],
-        "Johnathon Dalton":         ["J D Dalton"],
-        "Matt McKiernan":           ["MH McKiernan"],
-        "Keegan Petersen":          ["Keegan Petersenr"],
-        "Stephen Cook":             ["Stephen cook"],
-        "Nehemiah Odhiambo":        ["NN Odhiambo", "NM Odhiambo"],
-        "Rushab Patel":             ["Rushab Rakep Patel"],
-        "Rakep Patel":              ["Rushab Patel"],
-        "Hanuma Vihari":            ["G H Vihari"],
-        "Ravikumar Samarth":        ["Samarth R"],
-        "Pallavkumar Das":          ["PP Das"],
-        "Lohandre Louwrens":        ["Lohan Louwrens"],
-        "Thomas Charles Fell":      ["Tom Fell"],
-        "Tajinder Singh":           ["Dhillon"],
-        "Aniruddha Joshi":          ["Anirudha Joshi"],
-        "Robiul Haque":             ["Robiul Hoque"],
-        "Pramod Madushan":          ["Pramod Makalanda"],
-        "Pieter Christiaan Pretorius":  ["Tiaan Pretorius"],
-        "Telukupalli Ravi Teja":    ["T Ravi Teja"],
-        "Pradeep Dadhe":            ["P C Dadhe"],
-        "Duvvarapu Siva Kumar":     ["Sivakumar"],
-        "Sagun Kamat":              ["SK Kamat"],
-        "Stephen Sean Eskinazi":    ["Stevie Eskinazi"],
-        "Ahmadnoor Pathan":         ["Noor Pathan"],
-        "Mohammad Muddassir":       ["Mudassar"],
-        "Sandun Mendis":            ["ST Mendis"],
-        "Shashika Dulshan":         ["PWS Dulshan"],
-        "Fazle Mahmud":             ["Fazle Rabbi"],
-        "Kavisha Dilhari":          ["Kavishka Dilhani", "Kavisha Dilhari"],
-        "Prasadani Weerakkody":     ["PM Weerakkody"],
-        "Katie-Jane Hartshorn":     ["Katie Hartshorn"],
-        "Natasha Farrant":          ["Tash Farrant"],
-        "Nannapat Koncharoenkai":   ["Khoncharoenkai"],
+        "Thomas Smith": ["Tom Smith"],
+        "SamTruloff": ["Truloff"],
+        "Athi Maposa": ["Attie Maposa"],
+        "Petrus van Biljon": ["Pite van Biljon"],
+        "Johnathon Dalton": ["J D Dalton"],
+        "Matt McKiernan": ["MH McKiernan"],
+        "Keegan Petersen": ["Keegan Petersenr"],
+        "Stephen Cook": ["Stephen cook"],
+        "Nehemiah Odhiambo": ["NN Odhiambo", "NM Odhiambo"],
+        "Rushab Patel": ["Rushab Rakep Patel"],
+        "Rakep Patel": ["Rushab Patel"],
+        "Hanuma Vihari": ["G H Vihari"],
+        "Ravikumar Samarth": ["Samarth R"],
+        "Pallavkumar Das": ["PP Das"],
+        "Lohandre Louwrens": ["Lohan Louwrens"],
+        "Thomas Charles Fell": ["Tom Fell"],
+        "Tajinder Singh": ["Dhillon"],
+        "Aniruddha Joshi": ["Anirudha Joshi"],
+        "Robiul Haque": ["Robiul Hoque"],
+        "Pramod Madushan": ["Pramod Makalanda"],
+        "Pieter Christiaan Pretorius": ["Tiaan Pretorius"],
+        "Telukupalli Ravi Teja": ["T Ravi Teja"],
+        "Pradeep Dadhe": ["P C Dadhe"],
+        "Duvvarapu Siva Kumar": ["Sivakumar"],
+        "Sagun Kamat": ["SK Kamat"],
+        "Stephen Sean Eskinazi": ["Stevie Eskinazi"],
+        "Ahmadnoor Pathan": ["Noor Pathan"],
+        "Mohammad Muddassir": ["Mudassar"],
+        "Sandun Mendis": ["ST Mendis"],
+        "Shashika Dulshan": ["PWS Dulshan"],
+        "Fazle Mahmud": ["Fazle Rabbi"],
+        "Kavisha Dilhari": ["Kavishka Dilhani", "Kavisha Dilhari"],
+        "Prasadani Weerakkody": ["PM Weerakkody"],
+        "Katie-Jane Hartshorn": ["Katie Hartshorn"],
+        "Natasha Farrant": ["Tash Farrant"],
+        "Nannapat Koncharoenkai": ["Khoncharoenkai"],
     }
 
     @staticmethod
@@ -111,7 +111,7 @@ class Common:
     def get_match_format(match_title, series_formats):
         match_type = match_title.split(",")[1].lower()
         series_formats = series_formats.lower()
-        if ("practice" in match_title) or ("warm-up" in match_title) or ("unofficial" in match_title):
+        if ("practice" in match_type) or ("warm-up" in match_type) or ("unofficial" in match_type):
             return None
         elif " t20" in match_type:
             return Common.match_formats[0]
@@ -183,3 +183,11 @@ class Common:
             for special_name in Common.special_players[name]:
                 names.append(special_name)
         return names
+
+    @staticmethod
+    def is_series_valid(series_link):
+        ignore_list = ["qualifiers", "warm-up", "practice"]
+        for item in ignore_list:
+            if item in series_link:
+                return False
+        return True

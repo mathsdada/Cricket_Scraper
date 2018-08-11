@@ -14,7 +14,7 @@ class Series:
         self.logger = logging.getLogger(__name__)
 
     def extract_series_data(self):
-        self.logger.debug("extract_series_data: thread={}, series={}".format(
+        self.logger.info("extract_series_data: thread={}, series={}".format(
             threading.current_thread().name, self.series_title))
         self.__extract_matches_list_of_series()
 

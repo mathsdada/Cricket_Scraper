@@ -17,7 +17,7 @@ class CalenderYear:
         series_blocks = soup.find_all('a', class_='text-hvr-underline')
         for index, series_block in enumerate(series_blocks):
             series_link = series_block.get('href')
-            if "cricket-series" in series_link:
+            if ("cricket-series" in series_link) and Common.is_series_valid(series_link):
                 series_id = series_link.split("/")[2]
                 series_title = series_block.text  # .split(",")[0]
                 series_link = Common.home_page + series_link
