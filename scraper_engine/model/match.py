@@ -51,6 +51,7 @@ class Match:
             player_id = player_block.get('href').split("/")[2]
             player_name = player_block.text \
                 .split("(c)")[0].split("(wk)")[0].split("(c & wk)")[0].strip()
+            player_name = Common.correct_player_name(player_name)
             if player_id not in series_squad.keys():
                 series_squad[player_id] = Player(player_name, player_id)
             self.squad[player_id] = series_squad[player_id]

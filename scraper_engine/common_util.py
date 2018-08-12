@@ -68,6 +68,18 @@ class Common:
         "Katie-Jane Hartshorn": ["Katie Hartshorn"],
         "Natasha Farrant": ["Tash Farrant"],
         "Nannapat Koncharoenkai": ["Khoncharoenkai"],
+        "Onnicha Kamchomphu":       ["O Khamchompu"],
+        "Mehidy Hasan": ["Mehedi Hasan"],
+        "Colin de Grandhomme": ["C de Grandhomme"],
+        "Michael Leask": ["M A Leask"],
+        "Mohammad Usman": ["Muhammad Usman"],
+        "Kevin O Brien": ["Kevin O'Brien"],
+        "Max ODowd": ["Max O'Dowd"],
+        "Niall O Brien": ["Niall O'Brien"],
+        "Zahoor Khan": ["Farooqi"],
+        "Vishaul Singh": ["Vishaul Anthony Singh"],
+        "Faheem Ashraf": ["Fahim Ashraf"],
+        "Sunil Kumar": ["Sunil Selwal"],
     }
 
     @staticmethod
@@ -186,8 +198,16 @@ class Common:
 
     @staticmethod
     def is_series_valid(series_link):
-        ignore_list = ["qualifiers", "warm-up", "practice"]
+        ignore_list = ["qualifier", "warm-up", "practice"]
         for item in ignore_list:
             if item in series_link:
                 return False
         return True
+
+    @staticmethod
+    def correct_player_name(name):
+        if name.endswith(" sub"):
+            name = name.replace(" sub", "")
+        elif name.endswith(" Sub"):
+            name = name.replace(" Sub", "")
+        return name
