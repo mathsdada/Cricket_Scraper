@@ -7,6 +7,8 @@ class Match:
         if not self.check_match_id(id):
             self.cursor.execute(sql, (
                     id, title, format, venue, playing_teams[0], playing_teams[1], winning_team, date, outcome, series_id, gender))
+            return True
+        return False
 
     def check_match_id(self, id):
         sql = """SELECT * FROM match WHERE match.id = %s"""
