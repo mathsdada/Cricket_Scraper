@@ -3,6 +3,7 @@ from scraper_engine.model.match import Match
 import logging
 import threading
 
+
 class Series:
     def __init__(self, series_id, series_title, series_year, series_link):
         self.series_id = series_id
@@ -11,6 +12,7 @@ class Series:
         self.series_link = series_link
         self.matches_list = []
         self.squad = {}
+        self.commentary_id_map = {}
         self.logger = logging.getLogger(__name__)
 
     def extract_series_data(self):

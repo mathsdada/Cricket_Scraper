@@ -1,17 +1,15 @@
 from scraper_engine.common_util import Common
 from scraper_engine.model.head_to_head import HeadToHead
-import threading
-import logging
 
 
 class Commentary:
-    def __init__(self, link, squad):
+    def __init__(self, link, squad, commentary_id_map):
         self.link = link
         self.squad = squad
+        self.commentary_id_map = commentary_id_map
         self.commentary_data = []
         self.head_to_head_object_cache = {}
         self.player_id_map = {}
-        self.logger = logging.getLogger(__name__)
         soup = Common.get_soup_object(self.link)
         commentary_blocks = soup.find_all('p', class_='cb-col cb-col-90 cb-com-ln')
         for commentary_block in reversed(commentary_blocks):
@@ -19,25 +17,16 @@ class Commentary:
             self.commentary_data.append(ball_commentary)
 
     def get_player_id_from_short_name(self, name):
-        if name in self.player_id_map.keys():
-            return self.player_id_map[name]
-        for player_id in self.squad.keys():
-            player = self.squad[player_id]
-            if name in player.short_names:
-                self.player_id_map[name] = player_id
-                return player_id
-        self.logger.info("Error: {} is not in the list processing by {}..".format(
-            name, threading.current_thread().name))
-        # print("Error: {} is not in the list processing by {}..".format(
-        #     name, threading.current_thread().name))
-        return -1
+        if name not in self.commentary_id_map.keys():
+            close_match = Common.get_close_match(name, self.squad.keys())
+            self.commentary_id_map[name] = self.squad[close_match].player_id
+        return self.commentary_id_map[name]
 
     def get_head_to_head_data(self):
         head_to_head_data = []
         for ball_commentary in self.commentary_data:
             players = ball_commentary[0].split(" to ")
             if len(players) < 2:
-                print([ball_commentary, self.link])
                 continue
             batsman_id = self.get_player_id_from_short_name(players[1].strip())
             bowler_id = self.get_player_id_from_short_name(players[0].strip())
@@ -47,7 +36,6 @@ class Commentary:
             elif len(ball_commentary) >= 2:
                 outcome = self.__get_outcome_of_a_ball(ball_commentary[1], "")
             else:
-                print([ball_commentary, self.link])
                 continue
             head_to_head.add_score(outcome['balls'], outcome['runs'], outcome['wicket'])
         # Get list of head_to_head objects of this match

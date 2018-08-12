@@ -38,7 +38,7 @@ def extract_series_data(series_queue):
         series_queue.task_done()
         series_object.extract_series_data()
         for match_object in series_object.get_matches_list():
-            match_object.extract_match_data(series_object.squad)
+            match_object.extract_match_data(series_object.squad, series_object.commentary_id_map)
 
 
 file_dir = os.path.split(os.path.realpath(__file__))[0]

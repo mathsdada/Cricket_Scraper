@@ -1,6 +1,8 @@
 import requests
 from bs4 import BeautifulSoup
 import threading
+from difflib import SequenceMatcher
+import logging
 
 
 class Common:
@@ -18,68 +20,6 @@ class Common:
         "2 runs": {'runs': 2, 'balls': 1, 'wicket': False, 'no_ball': False},
         "3 runs": {'runs': 3, 'balls': 1, 'wicket': False, 'no_ball': False},
         "no run": {'runs': 0, 'balls': 1, 'wicket': False, 'no_ball': False},
-    }
-
-    special_players = {
-        "Andrew Balbirnie": ["Andy Balbirnie"],
-        "Shardul Thakur": ["SN Thakur"],
-        "Cephas Zhuwao": ["Zhuwawo"],
-        "Rohit Paudel": ["Rohit Kumar"],
-        "D Arcy Short": ["D'Arcy Short", "DArcy Short"],
-        "Robert ODonnell": ["Robert O'Donnell"],
-        "Steve OKeefe": ["O'Keefe"],
-        "Kinchit Shah": ["KD Shah"],
-        "Jonathon Dean": ["Jono Dean"],
-        "Misbah-ul-Haq": ["Misbah"],
-        "Nicholas Frederick Kelly": ["Nick Kelly"],
-        "Thomas Smith": ["Tom Smith"],
-        "SamTruloff": ["Truloff"],
-        "Athi Maposa": ["Attie Maposa"],
-        "Petrus van Biljon": ["Pite van Biljon"],
-        "Johnathon Dalton": ["J D Dalton"],
-        "Matt McKiernan": ["MH McKiernan"],
-        "Keegan Petersen": ["Keegan Petersenr"],
-        "Stephen Cook": ["Stephen cook"],
-        "Nehemiah Odhiambo": ["NN Odhiambo", "NM Odhiambo"],
-        "Rushab Patel": ["Rushab Rakep Patel"],
-        "Rakep Patel": ["Rushab Patel"],
-        "Hanuma Vihari": ["G H Vihari"],
-        "Ravikumar Samarth": ["Samarth R"],
-        "Pallavkumar Das": ["PP Das"],
-        "Lohandre Louwrens": ["Lohan Louwrens"],
-        "Thomas Charles Fell": ["Tom Fell"],
-        "Tajinder Singh": ["Dhillon"],
-        "Aniruddha Joshi": ["Anirudha Joshi"],
-        "Robiul Haque": ["Robiul Hoque"],
-        "Pramod Madushan": ["Pramod Makalanda"],
-        "Pieter Christiaan Pretorius": ["Tiaan Pretorius"],
-        "Telukupalli Ravi Teja": ["T Ravi Teja"],
-        "Pradeep Dadhe": ["P C Dadhe"],
-        "Duvvarapu Siva Kumar": ["Sivakumar"],
-        "Sagun Kamat": ["SK Kamat"],
-        "Stephen Sean Eskinazi": ["Stevie Eskinazi"],
-        "Ahmadnoor Pathan": ["Noor Pathan"],
-        "Mohammad Muddassir": ["Mudassar"],
-        "Sandun Mendis": ["ST Mendis"],
-        "Shashika Dulshan": ["PWS Dulshan"],
-        "Fazle Mahmud": ["Fazle Rabbi"],
-        "Kavisha Dilhari": ["Kavishka Dilhani", "Kavisha Dilhari"],
-        "Prasadani Weerakkody": ["PM Weerakkody"],
-        "Katie-Jane Hartshorn": ["Katie Hartshorn"],
-        "Natasha Farrant": ["Tash Farrant"],
-        "Nannapat Koncharoenkai": ["Khoncharoenkai"],
-        "Onnicha Kamchomphu":       ["O Khamchompu"],
-        "Mehidy Hasan": ["Mehedi Hasan"],
-        "Colin de Grandhomme": ["C de Grandhomme"],
-        "Michael Leask": ["M A Leask"],
-        "Mohammad Usman": ["Muhammad Usman"],
-        "Kevin O Brien": ["Kevin O'Brien"],
-        "Max ODowd": ["Max O'Dowd"],
-        "Niall O Brien": ["Niall O'Brien"],
-        "Zahoor Khan": ["Farooqi"],
-        "Vishaul Singh": ["Vishaul Anthony Singh"],
-        "Faheem Ashraf": ["Fahim Ashraf"],
-        "Sunil Kumar": ["Sunil Selwal"],
     }
 
     @staticmethod
@@ -162,41 +102,6 @@ class Common:
         return Common.replace_team_name(match_winner.strip())
 
     @staticmethod
-    def get_short_names_of(name):
-        # This function assumes maximum of 3 words in name.
-        # Raise exception if name has more than 3 words
-        names = [name]
-        words = name.split()
-        num_words = len(words)
-        if num_words > 4:
-            raise ValueError("Number of words in name(={}) are more than 3 . Detected by {}".format(
-                name, threading.current_thread().name))
-        for word in words:
-            names.append(word)
-        if num_words == 2:
-            names.append(words[0][0].upper() + ' ' + words[1])
-            # names.append(words[0] + ' ' + words[1][0].upper())
-        if num_words == 3:
-            names.append(words[0] + ' ' + words[1])
-            names.append(words[0] + ' ' + words[2])
-            names.append(words[1] + ' ' + words[2])
-            names.append(words[0][0].upper() + ' ' + words[1])
-            names.append(words[0][0].upper() + ' ' + words[2])
-            names.append(words[1][0].upper() + ' ' + words[2])
-            names.append(words[0][0].upper() + words[1][0].upper() + ' ' + words[2])
-        if num_words == 4:
-            # Roelof van der Merwe ==> van der Merwe
-            # Timm van der Gugten ==> van der Gugten
-            # Rassie van der Dussen ==> Dussen
-            # ME Yazh Arun Mozhi ==> Yazh Arun Mozhi
-            # Nicky van den Bergh ==> van den Bergh
-            names.append(words[1] + ' ' + words[2] + ' ' + words[3])
-        if name in Common.special_players:
-            for special_name in Common.special_players[name]:
-                names.append(special_name)
-        return names
-
-    @staticmethod
     def is_series_valid(series_link):
         ignore_list = ["qualifier", "warm-up", "practice"]
         for item in ignore_list:
@@ -211,3 +116,18 @@ class Common:
         elif name.endswith(" Sub"):
             name = name.replace(" Sub", "")
         return name
+
+    @staticmethod
+    def get_close_match(name, target_list):
+        max_matching_size = -1
+        result = ""
+        for target in target_list:
+            s = SequenceMatcher(None, name, target)
+            cur_matching_size = 0
+            for match_block in s.get_matching_blocks():
+                cur_matching_size += match_block.size
+            if cur_matching_size > max_matching_size:
+                max_matching_size = cur_matching_size
+                result = target
+        logging.getLogger(__name__).info(" {} {}: {}".format(threading.current_thread().name, name, result))
+        return result

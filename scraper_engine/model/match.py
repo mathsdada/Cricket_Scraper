@@ -26,11 +26,11 @@ class Match:
         self.is_valid = True
         self.logger = logging.getLogger(__name__)
 
-    def extract_match_data(self, series_squad):
+    def extract_match_data(self, series_squad, commentary_id_map):
         self.logger.info(
             "extract_match_data: match_link = {}, thread = {}".format(self.match_link, threading.current_thread().name))
         self.__extract_match_info_squad_and_scores(series_squad)
-        self.__extract_head_to_head_data()
+        self.__extract_head_to_head_data(commentary_id_map)
 
     def get_match_innings_scores(self):
         return self.innings_scores
@@ -52,9 +52,10 @@ class Match:
             player_name = player_block.text \
                 .split("(c)")[0].split("(wk)")[0].split("(c & wk)")[0].strip()
             player_name = Common.correct_player_name(player_name)
-            if player_id not in series_squad.keys():
-                series_squad[player_id] = Player(player_name, player_id)
-            self.squad[player_id] = series_squad[player_id]
+            if player_name not in series_squad.keys():
+                series_squad[player_name] = Player(player_name, player_id)
+            self.squad[player_name] = series_squad[player_name]
+        self.logger.info("Squad => {} {}: {}".format(threading.current_thread().name, self.title, self.squad.keys()))
 
     def __extract_match_info_squad_and_scores(self, series_squad):
         match_score_card_link = Common.home_page + "/api/html/cricket-scorecard/" + str(self.id)
@@ -74,8 +75,8 @@ class Match:
             innings_score_object.set_bowling_scores(self.__extract_innings_bowling_scores(innings_bowling_block))
             self.innings_scores.append(innings_score_object)
 
-    def __extract_head_to_head_data(self):
-        commentary = Commentary(self.match_link, self.squad)
+    def __extract_head_to_head_data(self, commentary_id_map):
+        commentary = Commentary(self.match_link, self.squad, commentary_id_map)
         self.head_to_head_data = commentary.get_head_to_head_data()
 
     def __extract_innings_total_score(self, innings_batting_block, innings_num, playing_teams):
