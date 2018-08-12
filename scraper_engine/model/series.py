@@ -10,6 +10,10 @@ class Series:
         self.series_title = series_title
         self.series_year = series_year
         self.series_link = series_link
+        self.gender = "Men"
+        if "women" in series_title.lower():
+            self.gender = "Women"
+        self.db_match_table = None
         self.matches_list = []
         self.squad = {}
         self.commentary_id_map = {}
@@ -19,6 +23,12 @@ class Series:
         self.logger.info("extract_series_data: thread={}, series={}".format(
             threading.current_thread().name, self.series_title))
         self.__extract_matches_list_of_series()
+
+    def set_db_table_match(self, db_match_table):
+        self.db_match_table = db_match_table
+
+    def get_db_match_table(self):
+        return self.db_match_table
 
     def get_matches_list(self):
         return self.matches_list

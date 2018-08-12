@@ -111,6 +111,7 @@ class Common:
 
     @staticmethod
     def correct_player_name(name):
+        name = name.strip().split("(c)")[0].split("(wk)")[0].split("(c & wk)")[0].strip()
         if name.endswith(" sub"):
             name = name.replace(" sub", "")
         elif name.endswith(" Sub"):
