@@ -1,5 +1,7 @@
+from database_engine.database import Database
 from scraper_engine.common_util import Common
 from scraper_engine.model.match import Match
+from database_engine.model.match import Match as match_db
 import logging
 import threading
 
@@ -16,24 +18,23 @@ class Series:
         self.db_match_table = None
         self.matches_list = []
         self.squad = {}
-        self.commentary_id_map = {}
         self.logger = logging.getLogger(__name__)
 
     def extract_series_data(self):
         self.logger.info("extract_series_data: thread={}, series={}".format(
             threading.current_thread().name, self.series_title))
-        self.__extract_matches_list_of_series()
-
-    def set_db_table_match(self, db_match_table):
-        self.db_match_table = db_match_table
-
-    def get_db_match_table(self):
-        return self.db_match_table
+        # Open DB Connection
+        database = Database("localhost", "cricbuzz", "mathsdada", "1@gangadhar")
+        database.connect()
+        match_table_db = match_db(database.cursor)
+        self.__extract_matches_list_of_series(match_table_db)
+        # Close DB Connection
+        database.close()
 
     def get_matches_list(self):
         return self.matches_list
 
-    def __extract_matches_list_of_series(self):
+    def __extract_matches_list_of_series(self, match_table_db):
         soup = Common.get_soup_object(self.series_link)
         series_formats = \
             soup.find('div', class_='cb-col-100 cb-col cb-nav-main cb-bg-white').find('div').text.split(".")[0]
@@ -51,9 +52,12 @@ class Series:
                 match_format = Common.get_match_format(match_title.text, series_formats)
                 if match_format is not None:
                     match_link = match_title.get('href')
+                    match_id = match_link.split("/")[2]
+                    if match_table_db.check_match_id(match_id):
+                        self.logger.info("Skipping {}. Available in DB".format(match_id))
+                        continue
                     match_title = match_title.text
                     match_winning_team = Common.get_match_winning_team(match_outcome, match_outcome_block.text)
-                    match_id = match_link.split("/")[2]
                     playing_teams = match_title.split(",")[0].split(" vs ")
                     match_object = Match(match_id, match_title, match_format,
                                          playing_teams, match_venue.text,

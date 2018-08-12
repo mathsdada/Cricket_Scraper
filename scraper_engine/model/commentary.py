@@ -3,23 +3,22 @@ from scraper_engine.model.head_to_head import HeadToHead
 
 
 class Commentary:
-    def __init__(self, link, squad, commentary_id_map):
+    def __init__(self, link, squad):
         self.link = link
         self.squad = squad
-        self.commentary_id_map = commentary_id_map
+        self.commentary_id_map = {}
         self.commentary_data = []
         self.head_to_head_object_cache = {}
-        self.player_id_map = {}
         soup = Common.get_soup_object(self.link)
         commentary_blocks = soup.find_all('p', class_='cb-col cb-col-90 cb-com-ln')
         for commentary_block in reversed(commentary_blocks):
             ball_commentary = commentary_block.text.split(',')
             self.commentary_data.append(ball_commentary)
 
-    def get_player_id_from_short_name(self, name):
+    def get_player_full_name_from_short_name(self, name):
         if name not in self.commentary_id_map.keys():
             close_match = Common.get_close_match(name, self.squad.keys())
-            self.commentary_id_map[name] = self.squad[close_match].player_id
+            self.commentary_id_map[name] = close_match
         return self.commentary_id_map[name]
 
     def get_head_to_head_data(self):
@@ -28,8 +27,8 @@ class Commentary:
             players = ball_commentary[0].split(" to ")
             if len(players) < 2:
                 continue
-            batsman_id = self.get_player_id_from_short_name(players[1].strip())
-            bowler_id = self.get_player_id_from_short_name(players[0].strip())
+            batsman_id = self.get_player_full_name_from_short_name(players[1].strip())
+            bowler_id = self.get_player_full_name_from_short_name(players[0].strip())
             head_to_head = self.__get_head_to_head_object(batsman_id, bowler_id)
             if len(ball_commentary) >= 3:
                 outcome = self.__get_outcome_of_a_ball(ball_commentary[1], ball_commentary[2])

@@ -26,11 +26,11 @@ class Match:
         self.is_valid = True
         self.logger = logging.getLogger(__name__)
 
-    def extract_match_data(self, series_squad, commentary_id_map):
+    def extract_match_data(self, series_squad):
         self.logger.info(
             "extract_match_data: match_link = {}, thread = {}".format(self.match_link, threading.current_thread().name))
         self.__extract_match_info_squad_and_scores(series_squad)
-        self.__extract_head_to_head_data(commentary_id_map)
+        self.__extract_head_to_head_data()
 
     def get_match_innings_scores(self):
         return self.innings_scores
@@ -74,8 +74,8 @@ class Match:
             innings_score_object.set_bowling_scores(self.__extract_innings_bowling_scores(innings_bowling_block))
             self.innings_scores.append(innings_score_object)
 
-    def __extract_head_to_head_data(self, commentary_id_map):
-        commentary = Commentary(self.match_link, self.squad, commentary_id_map)
+    def __extract_head_to_head_data(self):
+        commentary = Commentary(self.match_link, self.squad)
         self.head_to_head_data = commentary.get_head_to_head_data()
 
     def __extract_innings_total_score(self, innings_batting_block, innings_num, playing_teams):
@@ -126,5 +126,7 @@ class Match:
                 other_score_items = bowler_score_block.find_all('div', class_='cb-col cb-col-8 text-right')
                 overs_bowled = other_score_items[0].text.strip()
 
-                bowler_objects.append(BowlerScore(player_name, overs_bowled, wickets_taken, runs_given, economy))
+                if len(economy) != 0:
+                    # Reason : Wasim Jaffer : https://www.cricbuzz.com/live-cricket-scorecard/19085/vidarbha-vs-chhattisgarh-group-d-ranji-trophy-2017-18
+                    bowler_objects.append(BowlerScore(player_name, overs_bowled, wickets_taken, runs_given, economy))
         return bowler_objects

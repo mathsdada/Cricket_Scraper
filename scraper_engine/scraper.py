@@ -11,18 +11,17 @@ class Scraper:
         self.logger = logging.getLogger(__name__)
         self.calender = None
 
-    def get_data(self, year, db_table_match):
+    def get_data(self, year):
         self.calender = CalenderYear(year)
-        self.__get_series_data(db_table_match)
+        self.__get_series_data()
         return self.calender
 
-    def __get_series_data(self, db_table_match):
+    def __get_series_data(self):
         num_series_threads = 8
         series_queue = Queue(maxsize=0)
         series_workers = []
 
         for series in self.calender.get_series_list():
-            series.set_db_table_match(db_table_match)
             series_queue.put(series)
         for i in range(num_series_threads):
             series_worker = Thread(target=extract_series_data, args=(series_queue,))
@@ -40,7 +39,4 @@ def extract_series_data(series_queue):
         series_queue.task_done()
         series_object.extract_series_data()
         for match_object in series_object.get_matches_list():
-            if not series_object.get_db_match_table().check_match_id(match_object.id):
-                match_object.extract_match_data(series_object.squad, series_object.commentary_id_map)
-            else:
-                logging.getLogger(__name__).info("Skipping {}. Available in DB".format(match_object.title))
+            match_object.extract_match_data(series_object.squad)
