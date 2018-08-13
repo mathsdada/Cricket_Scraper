@@ -1,5 +1,5 @@
-from scraper_engine.common_util import Common
-from scraper_engine.model.head_to_head import HeadToHead
+from scraper.common_util import Common
+from scraper.model.head_to_head import HeadToHead
 
 
 class Commentary:

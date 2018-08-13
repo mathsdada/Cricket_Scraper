@@ -1,7 +1,7 @@
-from database_engine.database import Database
-from scraper_engine.common_util import Common
-from scraper_engine.model.match import Match
-from database_engine.model.match import Match as match_db
+from database.database_engine import Database
+from scraper.common_util import Common
+from scraper.model.match import Match
+from database.schema.match import Match as match_db
 import logging
 import threading
 

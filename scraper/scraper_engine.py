@@ -1,7 +1,7 @@
 from queue import Queue
 from threading import Thread
 import threading
-from scraper_engine.model.calender_year import CalenderYear
+from scraper.model.calender_year import CalenderYear
 import logging.config
 import os
 

@@ -1,14 +1,14 @@
 import os
 import logging
-from scraper_engine.scraper import Scraper
-from database_engine.database import Database
-from database_engine.model.player import Player
-from database_engine.model.series import Series
-from database_engine.model.match import Match
-from database_engine.model.innings_stats import InningsStats
-from database_engine.model.head_to_head_stats import HeadToHeadStats
-from database_engine.model.batting_stats import BattingStats
-from database_engine.model.bowling_stats import BowlingStats
+from scraper.scraper_engine import Scraper
+from database.database_engine import Database
+from database.schema.player import Player
+from database.schema.series import Series
+from database.schema.match import Match
+from database.schema.innings_stats import InningsStats
+from database.schema.head_to_head_stats import HeadToHeadStats
+from database.schema.batting_stats import BattingStats
+from database.schema.bowling_stats import BowlingStats
 
 file_dir = os.path.split(os.path.realpath(__file__))[0]
 file_name = file_dir + '\logs.txt'

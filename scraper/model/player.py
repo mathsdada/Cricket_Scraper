@@ -1,4 +1,4 @@
-from scraper_engine.common_util import Common
+from scraper.common_util import Common
 
 
 class Player:
