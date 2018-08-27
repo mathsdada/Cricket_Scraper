@@ -1,6 +1,6 @@
 import os
 import logging
-from scraper.scraper_engine import Scraper
+from scraper.scraper_stats import StatsScraper
 from database.database_engine import Database
 from database.schema.player import Player
 from database.schema.series import Series
@@ -14,8 +14,8 @@ file_dir = os.path.split(os.path.realpath(__file__))[0]
 file_name = file_dir + '\logs.txt'
 logging.basicConfig(filename=file_name, level=logging.INFO)
 
-scraper = Scraper()
-calender_year = scraper.get_data(2018)
+scraper = StatsScraper()
+calender_year = scraper.get_stats_of_calender_year(2018)
 
 database = Database("localhost", "cricbuzz", "mathsdada", "1@gangadhar")
 database.connect()

@@ -1,17 +1,15 @@
 from queue import Queue
 from threading import Thread
-import threading
 from scraper.model.calender_year import CalenderYear
 import logging.config
-import os
 
 
-class Scraper:
+class StatsScraper:
     def __init__(self):
         self.logger = logging.getLogger(__name__)
         self.calender = None
 
-    def get_data(self, year):
+    def get_stats_of_calender_year(self, year):
         self.calender = CalenderYear(year)
         self.__get_series_data()
         return self.calender
