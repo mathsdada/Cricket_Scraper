@@ -1,5 +1,5 @@
 from scraper.common_util import Common
-from scraper.model.series import Series
+from scraper.model.stats.series import Series
 
 
 class CalenderYear:

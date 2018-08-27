@@ -1,6 +1,6 @@
 from database.database_engine import Database
 from scraper.common_util import Common
-from scraper.model.match import Match
+from scraper.model.stats.match import Match
 from database.schema.match import Match as match_db
 import logging
 import threading

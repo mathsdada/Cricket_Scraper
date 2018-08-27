@@ -1,9 +1,9 @@
 from scraper.common_util import Common
-from scraper.model.batsman_score import BatsmanScore
-from scraper.model.bowler_score import BowlerScore
-from scraper.model.commentary import Commentary
-from scraper.model.innings_score import InningsScore
-from scraper.model.player import Player
+from scraper.model.stats.batsman_score import BatsmanScore
+from scraper.model.stats.bowler_score import BowlerScore
+from scraper.model.stats.commentary import Commentary
+from scraper.model.stats.innings_score import InningsScore
+from scraper.model.stats.player import Player
 from datetime import datetime
 import threading
 import logging
