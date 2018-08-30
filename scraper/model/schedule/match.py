@@ -11,6 +11,7 @@ class Match:
         self.teams = None
         self.format = None
         self.date = None
+        self.time = None
 
         self.series = series_object
         self.link = link
@@ -29,20 +30,33 @@ class Match:
             team_a = squad_blocks[0].text.split('\xa0')[0].strip()
             team_a_squad = squad_blocks[1].text.strip()
             team_b_squad = squad_blocks[2].text.strip()
-            team_b = soup.find('div', 'cb-col cb-col-100 cb-minfo-tm-nm cb-minfo-tm2-nm').text\
-                         .split('\xa0')[0].strip()
+            team_b = soup.find('div', 'cb-col cb-col-100 cb-minfo-tm-nm cb-minfo-tm2-nm').text \
+                .split('\xa0')[0].strip()
             teams[team_a] = team_a_squad
             teams[team_b] = team_b_squad
         else:
             raise Exception("No Squad...")
         return teams
 
+    def __extract_match_date_and_time(self, soup):
+        match_info = {}
+        match_info_items = soup.find_all('div', class_='cb-col cb-col-100 cb-mtch-info-itm')
+        for match_info_item in match_info_items:
+            key = match_info_item.find('div', class_='cb-col cb-col-27').text
+            value = match_info_item.find('div', class_='cb-col cb-col-73').text
+            match_info[key] = value
+        date = match_info['Date']
+        time = match_info['Time']
+
+
     def __extract_match_data(self):
         link = self.link.replace("live-cricket-scores", "live-cricket-scorecard")
         soup = Common.get_soup_object(link)
         if self.series is None:
             self.series = self.__extract_series_object(soup)
-
+        self.teams = self.__extract_teams(soup)
+        self.format = Common.get_match_format(self.title, self.series.format)
+        self.date = None
 
     def get_series_object(self):
         return self.series

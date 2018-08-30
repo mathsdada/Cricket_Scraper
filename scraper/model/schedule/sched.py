@@ -29,7 +29,10 @@ class Schedule:
                         match_title = match_title_block.text
                         match_link = match_title_block.get('href')
                         match_venue = match_block.find('div').text
-                        match_object = Match(match_title, match_venue, match_link, series_object)
 
-                        series_object = match_object.get_series_object()
-                        series_object.add_match(match_object)
+                        match_object = Match(match_title, match_venue, match_link, series_object)
+                        if series_object is None:
+                            series_object = match_object.get_series_object()
+                            self.series_data[series_title] = series_object
+                        if match_object.format is not None:
+                            series_object.add_match(match_object)
