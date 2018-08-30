@@ -4,8 +4,12 @@ from scraper.common_util import Common
 class Series:
     def __init__(self, title, link):
         self.title = title
-        self.format = []
+        self.id = Common.get_id_from_link(link)
+        self.gender = "Men"
+        if "women" in title.lower():
+            self.gender = "Women"
 
+        self.format = []
         self.link = link
         self.matches_list = []
         self.__extract_series_info()
@@ -17,3 +21,6 @@ class Series:
 
     def add_match(self, match):
         self.matches_list.append(match)
+
+    def get_matches_list(self):
+        return self.matches_list

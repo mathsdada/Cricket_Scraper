@@ -3,6 +3,8 @@ from bs4 import BeautifulSoup
 import threading
 from difflib import SequenceMatcher
 import logging
+from datetime import datetime
+from pytz import timezone
 
 
 class Common:
@@ -132,3 +134,21 @@ class Common:
                 result = target
         logging.getLogger(__name__).info(" {} {}: {}".format(threading.current_thread().name, name, result))
         return result
+
+    @staticmethod
+    def get_date_now():
+        # Apr 14, 2018, Saturday
+        # refer this link for more info. https://www.saltycrane.com/blog/2008/06/how-to-get-current-date-and-time-in/
+        now = datetime.now()
+        return now.strftime("%b %d, %Y, %A")
+
+    @staticmethod
+    def get_epoch_time_from_gmt(time):
+        time_format = "%A, %B %d, %Y %I:%M %p %Z"
+        time_zone = timezone('GMT')
+        gmt_time = time_zone.localize(datetime.strptime(time, time_format))
+        return int(gmt_time.timestamp())
+
+    @staticmethod
+    def get_id_from_link(link):
+        return link.replace(Common.home_page, "").split("/")[2]
