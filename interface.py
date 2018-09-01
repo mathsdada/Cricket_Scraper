@@ -1,11 +1,6 @@
-import enum
-
-
-class Query(enum.Enum):
-    SCHEDULE = 1
+class Interface:
+    QUERY_SCHEDULE = "0"
     # add new query type above this line
 
-
-class Response(enum.Enum):
-    SCHEDULE = 1
+    RESP_SCHEDULE = "0"
     # add new response type above this line
