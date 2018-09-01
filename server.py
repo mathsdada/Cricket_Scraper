@@ -1,3 +1,5 @@
+import logging
+import os
 from aiohttp import web
 import socketio
 from database.database_engine import Database
@@ -70,5 +72,8 @@ class Server:
         return response
 
 
+file_dir = os.path.split(os.path.realpath(__file__))[0]
+file_name = file_dir + '\logs.txt'
+logging.basicConfig(filename=file_name, level=logging.INFO)
 server = Server()
 server.setup()

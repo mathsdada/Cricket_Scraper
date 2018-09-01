@@ -1,5 +1,3 @@
-import os
-import logging
 from scraper.scraper_stats import StatsScraper
 from database.database_engine import Database
 from database.schema.player import Player
@@ -18,9 +16,7 @@ from database.schema.schedule_player import Player as SchedulePlayer
 
 class Controller:
     def __init__(self):
-        file_dir = os.path.split(os.path.realpath(__file__))[0]
-        file_name = file_dir + '\logs.txt'
-        logging.basicConfig(filename=file_name, level=logging.INFO)
+        pass
 
     def update_stats_database(self):
         scraper = StatsScraper()
