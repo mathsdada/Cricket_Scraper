@@ -13,6 +13,7 @@ from scraper.scraper_schedule import ScheduleScraper
 from database.schema.schedule_series import Series as ScheduleSeries
 from database.schema.schedule_match import Match as ScheduleMatch
 from database.schema.schedule_squad import Squad as ScheduleSquad
+from database.schema.schedule_player import Player as SchedulePlayer
 
 
 class Controller:
@@ -83,6 +84,7 @@ class Controller:
         series_table = ScheduleSeries(database.cursor)
         match_table = ScheduleMatch(database.cursor)
         squad_table = ScheduleSquad(database.cursor)
+        player_table = SchedulePlayer(database.cursor)
 
         for series in scraper.get_schedule():
             series_table.insert(series.id, series.title, series.gender)
@@ -90,7 +92,14 @@ class Controller:
                 match_table.insert(match.id, match.title, match.format, match.time, match.venue, list(match.teams.keys()),
                                    series.id, series.gender)
                 for team in match.teams:
-                    squad_table.insert(match.id, team, match.teams[team])
+                    player_objects = match.teams[team]
+                    player_ids = []
+                    for player_object in player_objects:
+                        player_table.insert(player_object.player_id, player_object.name, player_object.role,
+                                            player_object.batting_style, player_object.bowling_style,
+                                            series.gender)
+                        player_ids.append(int(player_object.player_id))
+                    squad_table.insert(match.id, team, player_ids)
         database.conn.commit()
         database.close()
 

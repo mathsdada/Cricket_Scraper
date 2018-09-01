@@ -1,5 +1,6 @@
 from scraper.common_util import Common
 from scraper.model.schedule.series import Series
+from scraper.model.player import Player
 
 
 class Match:
@@ -37,17 +38,27 @@ class Match:
 
         return Series(series_title, series_link)
 
+    def __extract_team_squad(self, squad_block):
+        squad = []
+        player_blocks = squad_block.find_all('a', class_='margin0 text-black text-hvr-underline')
+        for player_block in player_blocks:
+            player_id = player_block.get('href').split("/")[2]
+            player_name = player_block.text
+            player_name = Common.correct_player_name(player_name)
+            squad.append(Player(player_name, player_id))
+        return squad
+
     def __extract_teams(self, soup):
         teams = {}
         squad_blocks = soup.find_all('div', 'cb-col cb-col-100 cb-minfo-tm-nm')
         if len(squad_blocks) == 3:
             team_a = squad_blocks[0].text.split('\xa0')[0].strip()
-            team_a_squad = squad_blocks[1].text.strip()
-            team_b_squad = squad_blocks[2].text.strip()
+            team_a_squad_block = squad_blocks[1]
+            team_b_squad_block = squad_blocks[2]
             team_b = soup.find('div', 'cb-col cb-col-100 cb-minfo-tm-nm cb-minfo-tm2-nm').text \
                 .split('\xa0')[0].strip()
-            teams[team_a] = team_a_squad
-            teams[team_b] = team_b_squad
+            teams[team_a] = self.__extract_team_squad(team_a_squad_block)
+            teams[team_b] = self.__extract_team_squad(team_b_squad_block)
         else:
             pass
             # raise Exception("No Squad...")

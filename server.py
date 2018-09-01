@@ -3,7 +3,10 @@ import socketio
 from database.database_engine import Database
 from interface import Query, Response
 import json
-
+from database.query.schedule import Schedule
+from database.query.player import Player
+from database.query.venue import Venue
+from database.query.team import Team
 
 class Server:
     def __init__(self):
@@ -11,6 +14,12 @@ class Server:
         # setup database connection for handling client queries
         self.database = Database("localhost", "cricbuzz", "mathsdada", "1@gangadhar")
         self.database.connect()
+
+        # query objects
+        self.schedule_query = Schedule(self.database.cursor)
+        self.player_query = Player(self.database.cursor)
+        self.venue_query = Venue(self.database.cursor)
+        self.team_query = Team(self.database.cursor)
 
     def setup(self):
         sio = socketio.AsyncServer()
@@ -49,7 +58,7 @@ class Server:
     def handle_query(self, query_type, query_data):
         if query_type == Query.SCHEDULE:
             response_type = Response.SCHEDULE
-            response_data = None
+            response_data = self.schedule_query.get_schedule()
         else:
             response_type = None
             response_data = None
