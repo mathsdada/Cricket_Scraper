@@ -17,7 +17,6 @@ from database.schema.schedule_player import Player as SchedulePlayer
 class Controller:
     def __init__(self, database):
         self.database = database
-        self.database.connect()
 
     def update_stats_database(self):
         scraper = StatsScraper()
@@ -67,7 +66,6 @@ class Controller:
                     head_to_head_stats_table.insert(bowler_profile.player_id, batsman_profile.player_id, match.id,
                                                     head_to_head.runs, head_to_head.balls, head_to_head.wickets)
                 self.database.conn.commit()
-        self.database.close()
 
     def update_schedule_database(self):
         self.__clear_schedule_database()
@@ -94,7 +92,6 @@ class Controller:
                         player_ids.append(int(player_object.player_id))
                     squad_table.insert(match.id, team, player_ids)
         self.database.conn.commit()
-        self.database.close()
 
     def __clear_schedule_database(self):
         series_table = ScheduleSeries(self.database.cursor)
@@ -106,4 +103,3 @@ class Controller:
         series_table.clear()
 
         self.database.conn.commit()
-        self.database.close()
