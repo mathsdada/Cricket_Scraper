@@ -9,6 +9,7 @@ from database.query.schedule import Schedule
 from database.query.player import Player
 from database.query.venue import Venue
 from database.query.team import Team
+from controller import Controller
 
 
 class Server:
@@ -23,6 +24,15 @@ class Server:
         self.player_query = Player(self.database.cursor)
         self.venue_query = Venue(self.database.cursor)
         self.team_query = Team(self.database.cursor)
+
+        # Controller
+        self.controller = Controller(self.database)
+        self.update_database()
+
+    def update_database(self):
+        self.controller.update_stats_database()
+        self.controller.update_schedule_database()
+        # start a timer to next scraping time..
 
     def setup(self):
         sio = socketio.AsyncServer()
