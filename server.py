@@ -14,6 +14,7 @@ from controller import Controller
 
 class Server:
     def __init__(self):
+        self.logger = logging.getLogger("Dream:Server")
         self.num_clients = 0
         # setup database connection for handling client queries
         self.database = Database("localhost", "cricbuzz", "mathsdada", "1@gangadhar")
@@ -49,18 +50,20 @@ class Server:
 
         @sio.on('query', namespace='/')
         async def query(sid, data):
+            self.logger.info("query from client ({})-  {}".format(sid, data))
             response = self.event_handler('query', data)
-            print(response)
+            self.logger.info("response to client ({})-  {}".format(sid, response))
             await sio.emit('response', response, room=sid)
 
         web.run_app(app, host='192.168.0.105', port=5678)
 
     def event_handler(self, event_type, event_data):
         response = None
-        print("event_handler: type : {}, data : {}".format(event_type, event_data))
         if event_type == 'connect':
+            self.logger.info("Client Connected : {}".format(event_data))
             self.num_clients += 1
         elif event_type == 'disconnect':
+            self.logger.info("Client Disconnected : {}".format(event_data))
             self.num_clients -= 1
         elif event_type == 'query':
             query_json = json.loads(event_data)
@@ -84,6 +87,7 @@ class Server:
 
 file_dir = os.path.split(os.path.realpath(__file__))[0]
 file_name = file_dir + '\logs.txt'
-logging.basicConfig(filename=file_name, level=logging.INFO)
+logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+                    datefmt='%m/%d/%Y %I:%M:%S %p', filename=file_name, level=logging.INFO)
 server = Server()
 server.setup()
