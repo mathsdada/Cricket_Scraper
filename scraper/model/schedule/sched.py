@@ -33,8 +33,7 @@ class Schedule:
                         match_venue = match_block.find('div').text
 
                         match_object = Match(match_title, match_venue, match_link, series_object)
-                        if (not match_object.match_started) and \
-                                (match_object.format is not None):
+                        if match_object.is_valid:
                             if series_object is None:
                                 series_object = match_object.get_series_object()
                                 self.series_data[series_title] = series_object

@@ -29,11 +29,12 @@ class Schedule:
         query_results = Common.extract_query_results(self.cursor)
         return query_results
 
-    def __get_squad(self, match_id, team):
-        sql = """select squad from schedule_squad where match_id=%s and team=%s"""
-        self.cursor.execute(sql, (match_id, team))
+    def __get_team_info(self, team_id):
+        sql = """select name as team_name, short_name as team_short_name, squad as team_squad
+                from schedule_team where id=%s"""
+        self.cursor.execute(sql, (team_id, ))
         query_results = Common.extract_query_results(self.cursor)
-        return query_results
+        return query_results[0]
 
     def __get_player_info(self, player_id):
         sql = """select name as player_name, role as player_role,
@@ -51,15 +52,16 @@ class Schedule:
         return players
 
     def __process_match(self, match):
-        id = match['match_id']
         # remove id as client doesn't need this
         del match['match_id']
         # add team squad to each team
-        teams = match['match_teams']
+        team_ids = match['match_teams']
         match['match_teams'] = []
-        for team in teams:
-            team_squad = self.__get_squad(id, team)[0]
+        for team_id in team_ids:
+            team_info = self.__get_team_info(team_id)
             match['match_teams'].append(
-                {'team_name': team, 'team_squad': self.__process_squad(team_squad['squad'])})
+                {'team_name': team_info['team_name'],
+                 'team_short_name': team_info['team_short_name'],
+                 'team_squad': self.__process_squad(team_info['team_squad'])})
 
         return match

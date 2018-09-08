@@ -10,7 +10,7 @@ from database.schema.bowling_stats import BowlingStats
 from scraper.scraper_schedule import ScheduleScraper
 from database.schema.schedule_series import Series as ScheduleSeries
 from database.schema.schedule_match import Match as ScheduleMatch
-from database.schema.schedule_squad import Squad as ScheduleSquad
+from database.schema.schedule_team import Team as ScheduleTeam
 from database.schema.schedule_player import Player as SchedulePlayer
 
 
@@ -73,33 +73,37 @@ class Controller:
 
         series_table = ScheduleSeries(self.database.cursor)
         match_table = ScheduleMatch(self.database.cursor)
-        squad_table = ScheduleSquad(self.database.cursor)
+        team_table = ScheduleTeam(self.database.cursor)
         player_table = SchedulePlayer(self.database.cursor)
 
         for series in scraper.get_schedule():
             series_table.insert(series.id, series.title, series.gender)
             for match in series.get_matches_list():
-                match_table.insert(match.id, match.title, match.format, match.time, match.venue,
-                                   list(match.teams.keys()),
-                                   series.id, series.gender)
+                team_ids = []
                 for team in match.teams:
-                    player_objects = match.teams[team]
+                    player_objects = match.teams[team]['squad']
                     player_ids = []
                     for player_object in player_objects:
                         player_table.insert(player_object.player_id, player_object.name, player_object.role,
                                             player_object.batting_style, player_object.bowling_style,
                                             series.gender)
                         player_ids.append(int(player_object.player_id))
-                    squad_table.insert(match.id, team, player_ids)
+                    team_ids.append(
+                        team_table.insert(team, match.teams[team]['short_name'], player_ids))
+                match_table.insert(match.id, match.title, match.format, match.time, match.venue,
+                                   team_ids,
+                                   series.id, series.gender)
         self.database.conn.commit()
 
     def __clear_schedule_database(self):
         series_table = ScheduleSeries(self.database.cursor)
         match_table = ScheduleMatch(self.database.cursor)
-        squad_table = ScheduleSquad(self.database.cursor)
+        team_table = ScheduleTeam(self.database.cursor)
+        player_table = SchedulePlayer(self.database.cursor)
 
-        squad_table.clear()
         match_table.clear()
         series_table.clear()
+        team_table.clear()
+        player_table.clear()
 
         self.database.conn.commit()

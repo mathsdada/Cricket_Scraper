@@ -10,26 +10,34 @@ class Match:
         self.venue = venue
         # teams is a dictionary in below form
         # {'team-1' : [team-1's squad], 'team-2' : [team-2's squad]}
-        self.teams = None
+        self.teams = {}
         self.format = None
         self.time = None
 
-        self.match_started = False
+        self.is_valid = False
         self.series = series_object
         self.link = link
         self.match_info = {}
+
+        playing_teams = title.split(",")[0].split(" vs ")
+        self.teams[playing_teams[0]] = {'short_name': playing_teams[0], 'squad': []}
+        self.teams[playing_teams[1]] = {'short_name': playing_teams[0], 'squad': []}
+
         self.__extract_match_data()
 
     def __extract_match_data(self):
         link = self.link.replace("live-cricket-scores", "live-cricket-scorecard")
         soup = Common.get_soup_object(link)
-        self.__extract_match_info(soup)
         if self.series is None:
             self.series = self.__extract_series_object(soup)
-        self.teams = self.__extract_teams(soup)
         self.format = Common.get_match_format(self.title, self.series.format)
-        self.time = self.__get_match_time()
-        self.match_started = self.__is_match_started()
+        if self.format is not None:
+            self.__extract_match_info(soup)
+            if self.__is_valid() is True:
+                self.__extract_teams(soup)
+                self.__extract_teams_short_names()
+                self.time = self.__get_match_time()
+                self.is_valid = True
 
     def __extract_series_object(self, soup):
         series_block = soup.find('div', class_='cb-nav-subhdr cb-font-12').find('a', href=True)
@@ -49,20 +57,18 @@ class Match:
         return squad
 
     def __extract_teams(self, soup):
-        teams = {}
         squad_blocks = soup.find_all('div', 'cb-col cb-col-100 cb-minfo-tm-nm')
         if len(squad_blocks) == 3:
             team_a = squad_blocks[0].text.split('\xa0')[0].strip()
-            team_a_squad_block = squad_blocks[1]
-            team_b_squad_block = squad_blocks[2]
             team_b = soup.find('div', 'cb-col cb-col-100 cb-minfo-tm-nm cb-minfo-tm2-nm').text \
                 .split('\xa0')[0].strip()
-            teams[team_a] = self.__extract_team_squad(team_a_squad_block)
-            teams[team_b] = self.__extract_team_squad(team_b_squad_block)
-        else:
-            pass
-            # raise Exception("No Squad...")
-        return teams
+            team_a_squad_block = squad_blocks[1]
+            team_b_squad_block = squad_blocks[2]
+            if team_a in self.teams and team_b in self.teams:
+                self.teams[team_a]['squad'] = self.__extract_team_squad(team_a_squad_block)
+                self.teams[team_b]['squad'] = self.__extract_team_squad(team_b_squad_block)
+            else:
+                raise Exception("Squad Error....[{}, {}] {}".format(team_a, team_b, list(self.teams.keys())))
 
     def __extract_match_info(self, soup):
         self.match_info = {}
@@ -77,10 +83,16 @@ class Match:
         time = self.match_info['Time']
         return Common.get_epoch_time_from_gmt(date + ' ' + time)
 
+    def __extract_teams_short_names(self):
+        full_names = self.title.split(",")[0].split(" vs ")
+        short_names = self.match_info['Match'].split(",")[0].split(" vs ")
+        self.teams[full_names[0]]['short_name'] = short_names[0]
+        self.teams[full_names[1]]['short_name'] = short_names[1]
+
     def get_series_object(self):
         return self.series
 
-    def __is_match_started(self):
+    def __is_valid(self):
         if 'Toss' in self.match_info:
-            return True
-        return False
+            return False
+        return True
