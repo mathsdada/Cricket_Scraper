@@ -3,6 +3,7 @@ from database.database_engine import Database
 from database.schema.player import Player
 from database.schema.series import Series
 from database.schema.match import Match
+from database.schema.team import Team
 from database.schema.innings_stats import InningsStats
 from database.schema.head_to_head_stats import HeadToHeadStats
 from database.schema.batting_stats import BattingStats
@@ -24,6 +25,7 @@ class Controller:
 
         player_table = Player(self.database.cursor)
         series_table = Series(self.database.cursor)
+        team_table = Team(self.database.cursor)
         match_table = Match(self.database.cursor)
         innings_stats_table = InningsStats(self.database.cursor)
         head_to_head_stats_table = HeadToHeadStats(self.database.cursor)
@@ -33,13 +35,22 @@ class Controller:
         for series in calender_year.get_series_list():
             series_table.insert(series.series_id, series.series_title, series.gender, series.series_year)
             for match in series.get_matches_list():
+                team_name_id_map = {}
+                for team_name in match.teams:
+                    team_id = team_table.insert(team_name, match.teams[team_name])
+                    team_name_id_map[team_name] = team_id
+                winning_team_id = None
+                if match.winning_team in team_name_id_map:
+                    winning_team_id = team_name_id_map[match.winning_team]
                 match_table.insert(match.id, match.title, match.date, match.format, match.venue,
-                                   match.teams, match.winning_team, match.outcome, series.series_id, series.gender)
+                                   match.outcome, series.series_id, series.gender,
+                                   list(team_name_id_map.values()), winning_team_id)
                 for innings_score in match.get_match_innings_scores():
-                    innings_stats_table.insert(match.id, innings_score.number, innings_score.batting_team,
-                                               innings_score.bowling_team, innings_score.runs_scored,
+                    innings_stats_table.insert(match.id, innings_score.number, innings_score.runs_scored,
                                                innings_score.wickets_lost,
-                                               innings_score.overs_played)
+                                               innings_score.overs_played,
+                                               team_name_id_map[innings_score.batting_team],
+                                               team_name_id_map[innings_score.bowling_team])
                     for batting_score in innings_score.get_batting_scores():
                         batsman_profile = match.squad[batting_score.player_name]
                         player_table.insert(batsman_profile.player_id, batsman_profile.name, batsman_profile.role,
@@ -47,7 +58,7 @@ class Controller:
                         batting_stats_table.insert(batsman_profile.player_id, match.id, innings_score.number,
                                                    batting_score.runs_scored, batting_score.balls_played,
                                                    batting_score.num_fours, batting_score.num_sixes,
-                                                   innings_score.batting_team)
+                                                   team_name_id_map[innings_score.batting_team])
                     for bowling_score in innings_score.get_bowling_scores():
                         bowler_profile = match.squad[bowling_score.player_name]
                         player_table.insert(bowler_profile.player_id, bowler_profile.name, bowler_profile.role,
@@ -55,7 +66,7 @@ class Controller:
                         bowling_stats_table.insert(bowler_profile.player_id, match.id, innings_score.number,
                                                    bowling_score.wickets_taken, bowling_score.overs_bowled,
                                                    bowling_score.runs_given, bowling_score.economy,
-                                                   innings_score.bowling_team)
+                                                   team_name_id_map[innings_score.bowling_team])
                 for head_to_head in match.get_head_to_head_data():
                     batsman_profile = match.squad[head_to_head.batsman]
                     bowler_profile = match.squad[head_to_head.bowler]

@@ -5,13 +5,13 @@ class Team:
     def insert(self, name, short_name):
         sql = """INSERT INTO team  (name, short_name) VALUES(%s, %s)
                 RETURNING id"""
-        team_id = self.__check_team(name)
+        team_id = self.__get_team_id(name)
         if team_id is None:
             self.cursor.execute(sql, (name, short_name))
             team_id = self.cursor.fetchone()[0]
         return team_id
 
-    def __check_team(self, name):
+    def __get_team_id(self, name):
         sql = """SELECT * FROM team WHERE name = %s"""
         self.cursor.execute(sql, (name,))
         if self.cursor.rowcount > 0:
