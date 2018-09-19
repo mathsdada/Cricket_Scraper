@@ -21,7 +21,7 @@ class Match:
 
         playing_teams = title.split(",")[0].split(" vs ")
         self.teams[playing_teams[0]] = {'short_name': playing_teams[0], 'squad': []}
-        self.teams[playing_teams[1]] = {'short_name': playing_teams[0], 'squad': []}
+        self.teams[playing_teams[1]] = {'short_name': playing_teams[1], 'squad': []}
 
         self.__extract_match_data()
 
@@ -71,7 +71,6 @@ class Match:
                 raise Exception("Squad Error....[{}, {}] {}".format(team_a, team_b, list(self.teams.keys())))
 
     def __extract_match_info(self, soup):
-        self.match_info = {}
         match_info_items = soup.find_all('div', class_='cb-col cb-col-100 cb-mtch-info-itm')
         for match_info_item in match_info_items:
             key = match_info_item.find('div', class_='cb-col cb-col-27').text.strip()

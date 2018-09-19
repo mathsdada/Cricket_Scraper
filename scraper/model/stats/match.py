@@ -10,16 +10,23 @@ import logging
 
 
 class Match:
-    def __init__(self, match_id, title, format, teams, venue, result, match_link, winning_team):
+    def __init__(self, match_id, title, format, venue, result, match_link, winning_team):
         self.id = match_id
         self.title = title
         self.format = format
-        self.teams = teams
+        # {'team_1_name' : 'team_1_short_name', 'team_2_name':'team_2_short_name'}
+        self.teams = {}
         self.venue = venue
         self.outcome = result
         self.match_link = match_link
         self.date = 0  # epoch time
         self.winning_team = winning_team
+
+        playing_teams = title.split(",")[0].split(" vs ")
+        self.teams[playing_teams[0]] = playing_teams[0]
+        self.teams[playing_teams[1]] = playing_teams[1]
+
+        self.match_info = {}
         self.squad = {}
         self.innings_scores = []
         self.head_to_head_data = []
@@ -39,11 +46,25 @@ class Match:
         return self.head_to_head_data
 
     def __extract_match_info(self, soup):
-        match_info_blocks = soup.find_all('div', class_='cb-col cb-col-73')
+        match_info_items = soup.find_all('div', class_='cb-col cb-col-100 cb-mtch-info-itm')
+        for match_info_item in match_info_items:
+            key = match_info_item.find('div', class_='cb-col cb-col-27').text.strip()
+            value = match_info_item.find('div', class_='cb-col cb-col-73').text.strip()
+            self.match_info[key] = value
+        self.__extract_match_date()
+        self.__extract_teams_short_names()
+
+    def __extract_match_date(self):
         # Examples: 1) Friday, January 05, 2018 - Tuesday, January 09, 2018
         #           2) Tuesday, February 13, 2018
-        match_date_string = match_info_blocks[1].text.split(" - ")[0].strip()
+        match_date_string = self.match_info['Date'].split(" - ")[0].strip()
         self.date = datetime.strptime(match_date_string, "%A, %B %d, %Y").strftime("%Y-%m-%d")
+
+    def __extract_teams_short_names(self):
+        full_names = self.title.split(",")[0].split(" vs ")
+        short_names = self.match_info['Match'].split(",")[0].split(" vs ")
+        self.teams[full_names[0]] = short_names[0]
+        self.teams[full_names[1]] = short_names[1]
 
     def __extract_match_squad(self, soup, series_squad):
         player_blocks = soup.find_all('a', class_='margin0 text-black text-hvr-underline')
@@ -79,6 +100,7 @@ class Match:
         self.head_to_head_data = commentary.get_head_to_head_data()
 
     def __extract_innings_total_score(self, innings_batting_block, innings_num, playing_teams):
+        playing_teams = list(playing_teams.keys())
         innings_score_block = innings_batting_block.find('div', class_='cb-col cb-col-100 cb-scrd-hdr-rw').text
         innings_data = innings_score_block.split(" Innings ")
         batting_team = innings_data[0].replace(" 1st", "").replace(" 2nd", "").strip()
