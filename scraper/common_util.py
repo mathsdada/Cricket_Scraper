@@ -128,7 +128,7 @@ class Common:
             s = SequenceMatcher(None, name, target)
             cur_matching_size = 0
             for match_block in s.get_matching_blocks():
-                cur_matching_size = max(cur_matching_size, match_block.size)
+                cur_matching_size += match_block.size * match_block.size
             if cur_matching_size > max_matching_size:
                 max_matching_size = cur_matching_size
                 result = target

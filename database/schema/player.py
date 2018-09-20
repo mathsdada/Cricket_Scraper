@@ -24,5 +24,6 @@ class Player:
         sql = """SELECT * FROM player WHERE player.id = %s"""
         self.cursor.execute(sql, (id,))
         if self.cursor.rowcount > 0:
-            return Common.extract_query_results(self.cursor)
+            results = Common.extract_query_results(self.cursor)
+            return results[0]
         return None
