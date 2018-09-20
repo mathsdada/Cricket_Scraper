@@ -88,7 +88,7 @@ class Controller:
         player_table = SchedulePlayer(self.database.cursor)
 
         for series in scraper.get_schedule():
-            series_table.insert(series.id, series.title, series.gender)
+            series_table.insert(series.id, series.title, series.gender, series.category)
             for match in series.get_matches_list():
                 team_ids = []
                 for team in match.teams:

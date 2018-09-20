@@ -2,10 +2,11 @@ from scraper.common_util import Common
 
 
 class Series:
-    def __init__(self, title, link):
+    def __init__(self, title, link, category):
         self.title = title
         self.id = Common.get_id_from_link(link)
         self.gender = "Men"
+        self.category = category
         if "women" in title.lower():
             self.gender = "Women"
 

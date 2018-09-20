@@ -4,7 +4,7 @@ from scraper.model.player import Player
 
 
 class Match:
-    def __init__(self, title, venue, link, series_object):
+    def __init__(self, title, venue, link, series_object, category):
         self.id = Common.get_id_from_link(link)
         self.title = title
         self.venue = venue
@@ -23,13 +23,13 @@ class Match:
         self.teams[playing_teams[0]] = {'short_name': playing_teams[0], 'squad': []}
         self.teams[playing_teams[1]] = {'short_name': playing_teams[1], 'squad': []}
 
-        self.__extract_match_data()
+        self.__extract_match_data(category)
 
-    def __extract_match_data(self):
+    def __extract_match_data(self, category):
         link = self.link.replace("live-cricket-scores", "live-cricket-scorecard")
         soup = Common.get_soup_object(link)
         if self.series is None:
-            self.series = self.__extract_series_object(soup)
+            self.series = self.__extract_series_object(soup, category)
         self.format = Common.get_match_format(self.title, self.series.format)
         if self.format is not None:
             self.__extract_match_info(soup)
@@ -39,12 +39,12 @@ class Match:
                 self.time = self.__get_match_time()
                 self.is_valid = True
 
-    def __extract_series_object(self, soup):
+    def __extract_series_object(self, soup, category):
         series_block = soup.find('div', class_='cb-nav-subhdr cb-font-12').find('a', href=True)
         series_title = series_block.text
         series_link = Common.home_page + series_block.get('href')
 
-        return Series(series_title, series_link)
+        return Series(series_title, series_link, category)
 
     def __extract_team_squad(self, squad_block):
         squad = []

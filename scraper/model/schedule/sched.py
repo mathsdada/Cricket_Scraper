@@ -14,6 +14,7 @@ class Schedule:
         category_blocks = soup.find_all('div', {'class': 'cb-col-100 cb-col', 'ng-show': True})
         for category_block in category_blocks:
             if category_block.next_element.text == self.date:
+                category_type = Common.get_category_type(category_block.get('ng-show'))
                 series_blocks = category_block.find_all('div', class_='cb-col-100 cb-col')
                 for series_block in series_blocks:
                     series_title = series_block.next_element.text
@@ -32,7 +33,7 @@ class Schedule:
                         match_link = Common.home_page + match_title_block.get('href')
                         match_venue = match_block.find('div').text
 
-                        match_object = Match(match_title, match_venue, match_link, series_object)
+                        match_object = Match(match_title, match_venue, match_link, series_object, category_type)
                         if match_object.is_valid:
                             if series_object is None:
                                 series_object = match_object.get_series_object()

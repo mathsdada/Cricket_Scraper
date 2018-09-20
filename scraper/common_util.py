@@ -132,6 +132,9 @@ class Common:
             if cur_matching_size > max_matching_size:
                 max_matching_size = cur_matching_size
                 result = target
+            elif (cur_matching_size == max_matching_size) and (cur_matching_size != 0):
+                logging.getLogger(__name__).info("{} Worth Checking... {} => [{}, {}]".format(
+                    threading.current_thread().name, name, target, result))
         logging.getLogger(__name__).info(" {} {}: {}".format(threading.current_thread().name, name, result))
         return result
 
@@ -152,3 +155,16 @@ class Common:
     @staticmethod
     def get_id_from_link(link):
         return link.replace(Common.home_page, "").split("/")[2]
+
+    @staticmethod
+    def get_category_type(category_str):
+        if category_str == "((filtered_category == 0 || filtered_category == 9))":
+            return "International"
+        elif category_str == "((filtered_category == 1 || filtered_category == 9))":
+            return "Domestic & Others"
+        elif category_str == "((filtered_category == 2 || filtered_category == 9))":
+            return "T20 League"
+        elif category_str == "((filtered_category == 3 || filtered_category == 9))":
+            return "Women"
+        else:
+            return "Unknown"
