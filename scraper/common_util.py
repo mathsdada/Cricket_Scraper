@@ -132,9 +132,6 @@ class Common:
             if cur_matching_size > max_matching_size:
                 max_matching_size = cur_matching_size
                 result = target
-            elif (cur_matching_size == max_matching_size) and (cur_matching_size != 0):
-                logging.getLogger(__name__).info("{} Worth Checking... {} => [{}, {}]".format(
-                    threading.current_thread().name, name, target, result))
         logging.getLogger(__name__).info(" {} {}: {}".format(threading.current_thread().name, name, result))
         return result
 
