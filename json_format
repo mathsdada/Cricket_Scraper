@@ -1,0 +1,25 @@
+# Team Stats Query
+{"format"   :   "ODI",
+ "teams"    :   [
+                    {"team_name":"Pakistan"},
+                    {"team_name":"Afghanistan"}
+                ]
+}
+
+# Team Stats Response
+[
+    {'team_name':   'India',
+     'team_stats':  {'form':    [
+                                    {'outcome' : 'WIN','opp_team': 'ENG'},
+                                    {'outcome' : 'LOST','opp_team': 'ENG'}
+                                ],
+                    }
+    },
+    {'team_name':   'Pakistan',
+     'team_stats':  {'form':    [
+                                    {'outcome' : 'WIN','opp_team': 'ENG'},
+                                    {'outcome' : 'LOST','opp_team': 'ENG'}
+                                ],
+                    }
+    }
+]
