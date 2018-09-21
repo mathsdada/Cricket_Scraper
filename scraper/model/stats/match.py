@@ -20,14 +20,15 @@ class Match:
         self.outcome = result
         self.match_link = match_link
         self.date = 0  # epoch time
-        self.winning_team = winning_team
+        self.winning_team = None
 
         playing_teams = title.split(",")[0].split(" vs ")
         self.teams[playing_teams[0]] = playing_teams[0]
         self.teams[playing_teams[1]] = playing_teams[1]
         # India Women Red vs India Women Blue, India Red Won by 7 Wickets https://www.cricbuzz.com/cricket-scores/20732
         # India Women Blue vs India Women Green, India Green Won by 7 Wickets https://www.cricbuzz.com/cricket-scores/20733
-        self.winning_team = Common.get_close_match(winning_team, playing_teams)
+        if self.outcome == 'WIN':
+            self.winning_team = Common.get_close_match(winning_team, playing_teams)
 
         self.match_info = {}
         self.squad = {}
