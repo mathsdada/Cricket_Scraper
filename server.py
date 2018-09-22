@@ -69,7 +69,7 @@ class Server:
             query_json = json.loads(event_data)
             query_type = query_json['type']
             query_data = query_json['data']
-            response = self.handle_query(query_type, json.loads(query_data))
+            response = self.handle_query(query_type, query_data)
         else:
             pass
         return response
@@ -79,14 +79,15 @@ class Server:
             response_type = Interface.RESP_SCHEDULE
             response_data = self.schedule_query.get_schedule()
         elif query_type == Interface.QUERY_TEAM_STATS:
+            query_data = json.loads(query_data)
             response_type = Interface.RESP_TEAM_STATS
             response_data = []
             format = query_data['format']
             teams = query_data['teams']
             for team in teams:
-                team_stats = {'form': self.team_query.get_team_form(format, team['team_name'])
-                              }
-                response_data.append({'team_name': team['team_name'],
+                team_name = team['team_name']
+                team_stats = self.team_query.get_team_stats(format, team_name)
+                response_data.append({'team_name': team_name,
                                       'team_stats': team_stats})
         else:
             response_type = None
