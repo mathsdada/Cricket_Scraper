@@ -94,7 +94,8 @@ class Match:
             innings_bat_bowl_blocks = innings_data.find_all('div', class_='cb-col cb-col-100 cb-ltst-wgt-hdr')
             innings_batting_block = innings_bat_bowl_blocks[0]
             innings_bowling_block = innings_bat_bowl_blocks[1]
-            innings_score_object = self.__extract_innings_total_score(innings_batting_block, innings_num, self.__playing_teams)
+            innings_score_object = self.__extract_innings_total_score(innings_batting_block,
+                                                                      innings_num, self.__playing_teams)
             innings_score_object.set_batting_scores(self.__extract_innings_batting_scores(innings_batting_block))
             innings_score_object.set_bowling_scores(self.__extract_innings_bowling_scores(innings_bowling_block))
             self.__innings_scores.append(innings_score_object)
@@ -113,15 +114,29 @@ class Match:
         self.__extract_teams_short_names()
 
     def __extract_match_squad(self, soup, series_squad_ref):
-        player_blocks = soup.find_all('a', class_='margin0 text-black text-hvr-underline')
-        for player_block in player_blocks:
-            player_id = player_block.get('href').split("/")[2]
-            player_name = player_block.text
-            player_name = Common.correct_player_name(player_name)
-            if player_name not in series_squad_ref.keys():
-                series_squad_ref[player_name] = Player(player_name, player_id)
-            self.__match_squad[player_name] = series_squad_ref[player_name]
-        self.__logger.debug("Squad => {} {}: {}".format(threading.current_thread().name, self.__title, self.__match_squad.keys()))
+        squad_tags = soup.find_all('div',
+                                   {"class" : ["cb-col cb-col-100 cb-minfo-tm-nm",
+                                               "cb-col cb-col-100 cb-minfo-tm-nm cb-minfo-tm2-nm"]})
+        team_title = ""
+        for squad_tag in squad_tags:
+            player_blocks = squad_tag.find_all('a', class_='margin0 text-black text-hvr-underline')
+            if len(player_blocks) == 0:
+                team_title = squad_tag.text
+                if "Squad" in team_title :
+                    team_title = team_title.split("Squad")[0].strip()
+                    self.__match_squad[team_title] = {}
+                    if team_title not in series_squad_ref.keys():
+                        series_squad_ref[team_title] = {}
+            else:
+                if len(team_title) == 0 :
+                    raise Exception("match_link : {}".format(self.__match_link))
+                else:
+                    for player_block in player_blocks:
+                        player_id = player_block.get('href').split("/")[2]
+                        player_name = Common.correct_player_name(player_block.text)
+                        if player_name not in series_squad_ref[team_title].keys():
+                            series_squad_ref[team_title][player_name] = Player(player_name, player_id)
+                        self.__match_squad[team_title][player_name] = series_squad_ref[team_title][player_name]
 
     def __extract_innings_total_score(self, innings_batting_block, innings_num, playing_teams):
         playing_teams = list(playing_teams.keys())

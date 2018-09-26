@@ -52,14 +52,16 @@ class Controller:
                                    series.get_series_id(), series.get_series_gender(),
                                    list(team_name_id_map.values()), winning_team_id)
                 for innings_score in match.get_match_innings_scores():
+                    batting_team = innings_score.get_batting_team_name()
+                    bowling_team = innings_score.get_bowling_team_name()
                     innings_stats_table.insert(match.get_match_id(),
                                                innings_score.get_innings_number(), innings_score.get_runs(),
                                                innings_score.get_wickets(),
                                                innings_score.get_overs(),
-                                               team_name_id_map[innings_score.get_batting_team_name()],
-                                               team_name_id_map[innings_score.get_bowling_team_name()])
+                                               team_name_id_map[batting_team],
+                                               team_name_id_map[bowling_team])
                     for batting_score in innings_score.get_batting_scores():
-                        batsman_profile = match_squad[batting_score.get_name()]
+                        batsman_profile = match_squad[batting_team][batting_score.get_name()]
                         player_table.insert(batsman_profile.get_id(), batsman_profile.get_name(),
                                             batsman_profile.get_role(),
                                             batsman_profile.get_batting_style(), batsman_profile.get_bowling_style(),
@@ -70,7 +72,7 @@ class Controller:
                                                    batting_score.get_fours(), batting_score.get_sixes(),
                                                    team_name_id_map[innings_score.get_batting_team_name()])
                     for bowling_score in innings_score.get_bowling_scores():
-                        bowler_profile = match_squad[bowling_score.get_name()]
+                        bowler_profile = match_squad[bowling_team][bowling_score.get_name()]
                         player_table.insert(bowler_profile.get_id(), bowler_profile.get_name(),
                                             bowler_profile.get_role(),
                                             bowler_profile.get_batting_style(), bowler_profile.get_bowling_style(),
@@ -81,8 +83,8 @@ class Controller:
                                                    bowling_score.get_runs(), bowling_score.get_economy(),
                                                    team_name_id_map[innings_score.get_bowling_team_name()])
                 for head_to_head in match.get_head_to_head_data():
-                    batsman_profile = match_squad[head_to_head.get_batsman()]
-                    bowler_profile = match_squad[head_to_head.get_bowler()]
+                    batsman_profile = match_squad[head_to_head.get_batsman_team()][head_to_head.get_batsman()]
+                    bowler_profile  = match_squad[head_to_head.get_bowler_team()][head_to_head.get_bowler()]
                     player_table.insert(batsman_profile.get_id(), batsman_profile.get_name(),
                                         batsman_profile.get_role(),
                                         batsman_profile.get_batting_style(), batsman_profile.get_bowling_style(),

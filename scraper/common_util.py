@@ -98,9 +98,9 @@ class Common:
         margin = None
         if match_status == "WIN":
             if " won by " in match_result:
-                [match_winner, margin] = match_result.split(" won by ")[0]
+                [match_winner, margin] = match_result.split(" won by ")
             else:
-                [match_winner, margin] = match_result.split(" Won by ")[0]
+                [match_winner, margin] = match_result.split(" Won by ")
             match_winner = Common.replace_team_name(match_winner.strip())
         return [match_winner, margin]
 
