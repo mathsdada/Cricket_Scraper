@@ -10,98 +10,118 @@ import logging
 
 
 class Match:
-    def __init__(self, match_id, title, format, venue, result, match_link, winning_team):
-        self.id = match_id
-        self.title = title
-        self.format = format
+    def __init__(self, match_id, title, format, venue, result, match_link, winning_team, margin):
+        self.__id = match_id
+        self.__title = title
+        self.__format = format
+        self.__venue = venue
+        self.__result = result
+        self.__date = 0  # epoch time
+        self.__winning_team = None
+        self.__win_margin = margin
         # {'team_1_name' : 'team_1_short_name', 'team_2_name':'team_2_short_name'}
-        self.teams = {}
-        self.venue = venue
-        self.outcome = result
-        self.match_link = match_link
-        self.date = 0  # epoch time
-        self.winning_team = None
+        self.__playing_teams = {}
 
         playing_teams = title.split(",")[0].split(" vs ")
-        self.teams[playing_teams[0]] = playing_teams[0]
-        self.teams[playing_teams[1]] = playing_teams[1]
-        # India Women Red vs India Women Blue, India Red Won by 7 Wickets https://www.cricbuzz.com/cricket-scores/20732
-        # India Women Blue vs India Women Green, India Green Won by 7 Wickets https://www.cricbuzz.com/cricket-scores/20733
-        if self.outcome == 'WIN':
-            self.winning_team = Common.get_close_match(winning_team, playing_teams)
+        self.__playing_teams[playing_teams[0]] = playing_teams[0]
+        self.__playing_teams[playing_teams[1]] = playing_teams[1]
+        # India Women Red vs India Women Blue, India Red Won by 7 Wickets
+        # https://www.cricbuzz.com/cricket-scores/20732 India Women Blue vs India Women Green, India Green Won by 7
+        #  Wickets https://www.cricbuzz.com/cricket-scores/20733
+        if self.__result == 'WIN':
+            self.__winning_team = Common.get_close_match(winning_team, playing_teams)
 
-        self.match_info = {}
-        self.squad = {}
-        self.innings_scores = []
-        self.head_to_head_data = []
-        self.is_valid = True
-        self.logger = logging.getLogger(__name__)
+        self.__match_link = match_link
+        self.__match_info = {}
+        self.__match_squad = {}
+        self.__innings_scores = []
+        self.__head_to_head_data = []
+        self.__logger = logging.getLogger(__name__)
 
-    def extract_match_data(self, series_squad):
-        self.logger.info(
-            "extract_match_data: match_link = {}, thread = {}".format(self.match_link, threading.current_thread().name))
-        self.__extract_match_info_squad_and_scores(series_squad)
+    def get_match_id(self):
+        return self.__id
+
+    def get_match_title(self):
+        return self.__title
+
+    def get_match_format(self):
+        return self.__format
+
+    def get_match_venue(self):
+        return self.__venue
+
+    def get_match_result(self):
+        return self.__result
+
+    def get_match_date(self):
+        return self.__date
+
+    def get_match_winning_team(self):
+        return self.__winning_team
+
+    def get_match_win_margin(self):
+        return self.__win_margin
+
+    def get_match_squad(self):
+        return self.__match_squad
+
+    def extract_match_data(self, series_squad_ref):
+        self.__logger.info(
+            "extract_match_data: match_link = {}, thread = {}".format(self.__match_link, threading.current_thread().name))
+        self.__logger.info("series_squad_len: " + str(len(list(series_squad_ref.keys()))))
+        self.__extract_match_info_squad_and_scores(series_squad_ref)
         self.__extract_head_to_head_data()
 
     def get_match_innings_scores(self):
-        return self.innings_scores
+        return self.__innings_scores
 
     def get_head_to_head_data(self):
-        return self.head_to_head_data
+        return self.__head_to_head_data
 
-    def __extract_match_info(self, soup):
-        match_info_items = soup.find_all('div', class_='cb-col cb-col-100 cb-mtch-info-itm')
-        for match_info_item in match_info_items:
-            key = match_info_item.find('div', class_='cb-col cb-col-27').text.strip()
-            value = match_info_item.find('div', class_='cb-col cb-col-73').text.strip()
-            self.match_info[key] = value
-        self.__extract_match_date()
-        self.__extract_teams_short_names()
+    def get_match_playing_teams(self):
+        return self.__playing_teams
 
-    def __extract_match_date(self):
-        # Examples: 1) Friday, January 05, 2018 - Tuesday, January 09, 2018
-        #           2) Tuesday, February 13, 2018
-        match_date_string = self.match_info['Date'].split(" - ")[0].strip()
-        self.date = datetime.strptime(match_date_string, "%A, %B %d, %Y").strftime("%Y-%m-%d")
-
-    def __extract_teams_short_names(self):
-        full_names = self.title.split(",")[0].split(" vs ")
-        short_names = self.match_info['Match'].split(",")[0].split(" vs ")
-        self.teams[full_names[0]] = short_names[0]
-        self.teams[full_names[1]] = short_names[1]
-
-    def __extract_match_squad(self, soup, series_squad):
-        player_blocks = soup.find_all('a', class_='margin0 text-black text-hvr-underline')
-        for player_block in player_blocks:
-            player_id = player_block.get('href').split("/")[2]
-            player_name = player_block.text
-            player_name = Common.correct_player_name(player_name)
-            if player_name not in series_squad.keys():
-                series_squad[player_name] = Player(player_name, player_id)
-            self.squad[player_name] = series_squad[player_name]
-        self.logger.info("Squad => {} {}: {}".format(threading.current_thread().name, self.title, self.squad.keys()))
-
-    def __extract_match_info_squad_and_scores(self, series_squad):
-        match_score_card_link = Common.home_page + "/api/html/cricket-scorecard/" + str(self.id)
+    def __extract_match_info_squad_and_scores(self, series_squad_ref):
+        match_score_card_link = Common.home_page + "/api/html/cricket-scorecard/" + str(self.__id)
         soup = Common.get_soup_object(match_score_card_link)
         # Extract Match Info
         self.__extract_match_info(soup)
         # Extract Match Squad
-        self.__extract_match_squad(soup, series_squad)
+        self.__extract_match_squad(soup, series_squad_ref)
         # Extract Per-Innings Scores
         team_innings = soup.find_all('div', id=True)
         for innings_num, innings_data in enumerate(team_innings):
             innings_bat_bowl_blocks = innings_data.find_all('div', class_='cb-col cb-col-100 cb-ltst-wgt-hdr')
             innings_batting_block = innings_bat_bowl_blocks[0]
             innings_bowling_block = innings_bat_bowl_blocks[1]
-            innings_score_object = self.__extract_innings_total_score(innings_batting_block, innings_num, self.teams)
+            innings_score_object = self.__extract_innings_total_score(innings_batting_block, innings_num, self.__playing_teams)
             innings_score_object.set_batting_scores(self.__extract_innings_batting_scores(innings_batting_block))
             innings_score_object.set_bowling_scores(self.__extract_innings_bowling_scores(innings_bowling_block))
-            self.innings_scores.append(innings_score_object)
+            self.__innings_scores.append(innings_score_object)
 
     def __extract_head_to_head_data(self):
-        commentary = Commentary(self.match_link, self.squad)
-        self.head_to_head_data = commentary.get_head_to_head_data()
+        commentary = Commentary(self.__match_link, self.__match_squad)
+        self.__head_to_head_data = commentary.get_head_to_head_data()
+
+    def __extract_match_info(self, soup):
+        match_info_items = soup.find_all('div', class_='cb-col cb-col-100 cb-mtch-info-itm')
+        for match_info_item in match_info_items:
+            key = match_info_item.find('div', class_='cb-col cb-col-27').text.strip()
+            value = match_info_item.find('div', class_='cb-col cb-col-73').text.strip()
+            self.__match_info[key] = value
+        self.__extract_match_date()
+        self.__extract_teams_short_names()
+
+    def __extract_match_squad(self, soup, series_squad_ref):
+        player_blocks = soup.find_all('a', class_='margin0 text-black text-hvr-underline')
+        for player_block in player_blocks:
+            player_id = player_block.get('href').split("/")[2]
+            player_name = player_block.text
+            player_name = Common.correct_player_name(player_name)
+            if player_name not in series_squad_ref.keys():
+                series_squad_ref[player_name] = Player(player_name, player_id)
+            self.__match_squad[player_name] = series_squad_ref[player_name]
+        self.__logger.debug("Squad => {} {}: {}".format(threading.current_thread().name, self.__title, self.__match_squad.keys()))
 
     def __extract_innings_total_score(self, innings_batting_block, innings_num, playing_teams):
         playing_teams = list(playing_teams.keys())
@@ -156,3 +176,15 @@ class Match:
                     # Reason : Wasim Jaffer : https://www.cricbuzz.com/live-cricket-scorecard/19085/vidarbha-vs-chhattisgarh-group-d-ranji-trophy-2017-18
                     bowler_objects.append(BowlerScore(player_name, overs_bowled, wickets_taken, runs_given, economy))
         return bowler_objects
+
+    def __extract_match_date(self):
+        # Examples: 1) Friday, January 05, 2018 - Tuesday, January 09, 2018
+        #           2) Tuesday, February 13, 2018
+        match_date_string = self.__match_info['Date'].split(" - ")[0].strip()
+        self.__date = datetime.strptime(match_date_string, "%A, %B %d, %Y").strftime("%Y-%m-%d")
+
+    def __extract_teams_short_names(self):
+        full_names = self.__title.split(",")[0].split(" vs ")
+        short_names = self.__match_info['Match'].split(",")[0].split(" vs ")
+        self.__playing_teams[full_names[0]] = short_names[0]
+        self.__playing_teams[full_names[1]] = short_names[1]

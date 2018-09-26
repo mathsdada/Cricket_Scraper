@@ -16,8 +16,7 @@ class Server:
     def __init__(self):
         self.logger = logging.getLogger("Dream:Server")
         self.num_clients = 0
-        # setup database connection for handling client queries
-        self.database = Database("localhost", "cricbuzz", "mathsdada", "1@gangadhar")
+        self.database = Database()
         self.database.connect()
 
         # query objects
@@ -28,7 +27,7 @@ class Server:
 
         # Controller
         self.controller = Controller(self.database)
-        self.update_database()
+        # self.update_database()
 
     def update_database(self):
         self.controller.update_stats_database()
@@ -96,9 +95,9 @@ class Server:
         return response
 
 
-file_dir = os.path.split(os.path.realpath(__file__))[0]
-file_name = file_dir + '\logs.txt'
-logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-                    datefmt='%m/%d/%Y %I:%M:%S %p', filename=file_name, level=logging.INFO)
-server = Server()
-server.setup()
+# file_dir = os.path.split(os.path.realpath(__file__))[0]
+# file_name = file_dir + '\logs.txt'
+# logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+#                     datefmt='%m/%d/%Y %I:%M:%S %p', filename=file_name, level=logging.INFO)
+# server = Server()
+# server.setup()

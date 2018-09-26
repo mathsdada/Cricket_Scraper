@@ -33,49 +33,68 @@ class Controller:
         batting_stats_table = BattingStats(self.database.cursor)
 
         for series in calender_year.get_series_list():
-            series_table.insert(series.series_id, series.series_title, series.gender, series.series_year)
+            series_table.insert(series.get_series_id(), series.get_series_title(),
+                                series.get_series_gender(), series.get_series_year())
             for match in series.get_matches_list():
+                match_squad = match.get_match_squad()
+                match_playing_teams = match.get_match_playing_teams()
+
                 team_name_id_map = {}
-                for team_name in match.teams:
-                    team_id = team_table.insert(team_name, match.teams[team_name])
+                for team_name in match.get_match_playing_teams():
+                    team_id = team_table.insert(team_name, match_playing_teams[team_name])
                     team_name_id_map[team_name] = team_id
                 winning_team_id = None
-                if match.winning_team in team_name_id_map:
-                    winning_team_id = team_name_id_map[match.winning_team]
-                match_table.insert(match.id, match.title, match.date, match.format, match.venue,
-                                   match.outcome, series.series_id, series.gender,
+                if match.get_match_winning_team() in team_name_id_map:
+                    winning_team_id = team_name_id_map[match.get_match_winning_team()]
+
+                match_table.insert(match.get_match_id(), match.get_match_title(), match.get_match_date(),
+                                   match.get_match_format(), match.get_match_venue(), match.get_match_result(),
+                                   series.get_series_id(), series.get_series_gender(),
                                    list(team_name_id_map.values()), winning_team_id)
                 for innings_score in match.get_match_innings_scores():
-                    innings_stats_table.insert(match.id, innings_score.number, innings_score.runs_scored,
-                                               innings_score.wickets_lost,
-                                               innings_score.overs_played,
-                                               team_name_id_map[innings_score.batting_team],
-                                               team_name_id_map[innings_score.bowling_team])
+                    innings_stats_table.insert(match.get_match_id(),
+                                               innings_score.get_innings_number(), innings_score.get_runs(),
+                                               innings_score.get_wickets(),
+                                               innings_score.get_overs(),
+                                               team_name_id_map[innings_score.get_batting_team_name()],
+                                               team_name_id_map[innings_score.get_bowling_team_name()])
                     for batting_score in innings_score.get_batting_scores():
-                        batsman_profile = match.squad[batting_score.player_name]
-                        player_table.insert(batsman_profile.player_id, batsman_profile.name, batsman_profile.role,
-                                            batsman_profile.batting_style, batsman_profile.bowling_style, series.gender)
-                        batting_stats_table.insert(batsman_profile.player_id, match.id, innings_score.number,
-                                                   batting_score.runs_scored, batting_score.balls_played,
-                                                   batting_score.num_fours, batting_score.num_sixes,
-                                                   team_name_id_map[innings_score.batting_team])
+                        batsman_profile = match_squad[batting_score.get_name()]
+                        player_table.insert(batsman_profile.get_id(), batsman_profile.get_name(),
+                                            batsman_profile.get_role(),
+                                            batsman_profile.get_batting_style(), batsman_profile.get_bowling_style(),
+                                            series.get_series_gender())
+                        batting_stats_table.insert(batsman_profile.get_id(), match.get_match_id(),
+                                                   innings_score.get_innings_number(),
+                                                   batting_score.get_runs(), batting_score.get_balls(),
+                                                   batting_score.get_fours(), batting_score.get_sixes(),
+                                                   team_name_id_map[innings_score.get_batting_team_name()])
                     for bowling_score in innings_score.get_bowling_scores():
-                        bowler_profile = match.squad[bowling_score.player_name]
-                        player_table.insert(bowler_profile.player_id, bowler_profile.name, bowler_profile.role,
-                                            bowler_profile.batting_style, bowler_profile.bowling_style, series.gender)
-                        bowling_stats_table.insert(bowler_profile.player_id, match.id, innings_score.number,
-                                                   bowling_score.wickets_taken, bowling_score.overs_bowled,
-                                                   bowling_score.runs_given, bowling_score.economy,
-                                                   team_name_id_map[innings_score.bowling_team])
+                        bowler_profile = match_squad[bowling_score.get_name()]
+                        player_table.insert(bowler_profile.get_id(), bowler_profile.get_name(),
+                                            bowler_profile.get_role(),
+                                            bowler_profile.get_batting_style(), bowler_profile.get_bowling_style(),
+                                            series.get_series_gender())
+                        bowling_stats_table.insert(bowler_profile.get_id(), match.get_match_id(),
+                                                   innings_score.get_innings_number(),
+                                                   bowling_score.get_wickets(), bowling_score.get_overs(),
+                                                   bowling_score.get_runs(), bowling_score.get_economy(),
+                                                   team_name_id_map[innings_score.get_bowling_team_name()])
                 for head_to_head in match.get_head_to_head_data():
-                    batsman_profile = match.squad[head_to_head.batsman]
-                    bowler_profile = match.squad[head_to_head.bowler]
-                    player_table.insert(batsman_profile.player_id, batsman_profile.name, batsman_profile.role,
-                                        batsman_profile.batting_style, batsman_profile.bowling_style, series.gender)
-                    player_table.insert(bowler_profile.player_id, bowler_profile.name, bowler_profile.role,
-                                        bowler_profile.batting_style, bowler_profile.bowling_style, series.gender)
-                    head_to_head_stats_table.insert(bowler_profile.player_id, batsman_profile.player_id, match.id,
-                                                    head_to_head.runs, head_to_head.balls, head_to_head.wickets)
+                    batsman_profile = match_squad[head_to_head.get_batsman()]
+                    bowler_profile = match_squad[head_to_head.get_bowler()]
+                    player_table.insert(batsman_profile.get_id(), batsman_profile.get_name(),
+                                        batsman_profile.get_role(),
+                                        batsman_profile.get_batting_style(), batsman_profile.get_bowling_style(),
+                                        series.get_series_gender())
+                    player_table.insert(bowler_profile.get_id(), bowler_profile.get_name(),
+                                        bowler_profile.get_role(),
+                                        bowler_profile.get_batting_style(), bowler_profile.get_bowling_style(),
+                                        series.get_series_gender())
+                    head_to_head_stats_table.insert(bowler_profile.get_id(), batsman_profile.get_id(),
+                                                    match.get_match_id(),
+                                                    head_to_head.get_runs(), head_to_head.get_balls(),
+                                                    head_to_head.get_wickets())
                 self.database.conn.commit()
 
     def update_schedule_database(self):

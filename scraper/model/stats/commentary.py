@@ -3,13 +3,14 @@ from scraper.model.stats.head_to_head import HeadToHead
 
 
 class Commentary:
-    def __init__(self, link, squad):
-        self.link = link
-        self.squad = squad
+    def __init__(self, link, match_squad_ref):
+        self.__match_squad_ref = match_squad_ref
+
         self.commentary_id_map = {}
         self.commentary_data = []
         self.head_to_head_object_cache = {}
-        soup = Common.get_soup_object(self.link)
+
+        soup = Common.get_soup_object(link)
         commentary_blocks = soup.find_all('p', class_='cb-col cb-col-90 cb-com-ln')
         for commentary_block in reversed(commentary_blocks):
             ball_commentary = commentary_block.text.split(',')
@@ -17,7 +18,7 @@ class Commentary:
 
     def get_player_full_name_from_short_name(self, name):
         if name not in self.commentary_id_map.keys():
-            close_match = Common.get_close_match(name, self.squad.keys())
+            close_match = Common.get_close_match(name, self.__match_squad_ref.keys())
             self.commentary_id_map[name] = close_match
         return self.commentary_id_map[name]
 

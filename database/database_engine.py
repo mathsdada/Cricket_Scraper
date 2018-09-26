@@ -2,11 +2,11 @@ import psycopg2
 
 
 class Database:
-    def __init__(self, host, database, user, password):
-        self.__host = host
-        self.__database = database
-        self.__user = user
-        self.__password = password
+    def __init__(self):
+        self.__host = "localhost"
+        self.__database = "cricbuzz"
+        self.__user = "mathsdada"
+        self.__password = "1@gangadhar"
         self.conn = None
         self.cursor = None
 

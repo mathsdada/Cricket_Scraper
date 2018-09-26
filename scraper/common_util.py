@@ -93,15 +93,16 @@ class Common:
         return None
 
     @staticmethod
-    def get_match_winning_team(match_status, match_result):
+    def get_match_winning_team_and_margin(match_status, match_result):
+        match_winner = None
+        margin = None
         if match_status == "WIN":
             if " won by " in match_result:
-                match_winner = match_result.split(" won by ")[0]
+                [match_winner, margin] = match_result.split(" won by ")[0]
             else:
-                match_winner = match_result.split(" Won by ")[0]
-        else:
-            match_winner = "--"
-        return Common.replace_team_name(match_winner.strip())
+                [match_winner, margin] = match_result.split(" Won by ")[0]
+            match_winner = Common.replace_team_name(match_winner.strip())
+        return [match_winner, margin]
 
     @staticmethod
     def is_series_valid(series_link):

@@ -37,4 +37,4 @@ def extract_series_data(series_queue):
         series_queue.task_done()
         series_object.extract_series_data()
         for match_object in series_object.get_matches_list():
-            match_object.extract_match_data(series_object.squad)
+            match_object.extract_match_data(series_object.get_series_squad_ref())
