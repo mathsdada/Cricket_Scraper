@@ -82,7 +82,7 @@ class Controller:
                                                    bowling_score.get_wickets(), bowling_score.get_overs(),
                                                    bowling_score.get_runs(), bowling_score.get_economy(),
                                                    team_name_id_map[innings_score.get_bowling_team_name()])
-                for head_to_head in match.get_head_to_head_data():
+                for head_to_head in match.get_per_innings_head_to_head_data():
                     batsman_profile = match_squad[head_to_head.get_batsman_team()][head_to_head.get_batsman()]
                     bowler_profile  = match_squad[head_to_head.get_bowler_team()][head_to_head.get_bowler()]
                     player_table.insert(batsman_profile.get_id(), batsman_profile.get_name(),

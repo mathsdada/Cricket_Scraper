@@ -8,11 +8,19 @@ class HeadToHead:
         self.__runs = 0
         self.__wickets = 0
         self.__dot_balls = 0
+        self.__fours = 0
+        self.__sixes = 0
 
     def add_score(self, balls, runs, wicket):
         self.__wickets += wicket
         self.__balls += balls
         self.__runs += runs
+        if (balls == 1) and (runs == 0):
+            self.__dot_balls += 1
+        if runs == 4:
+            self.__fours += 1
+        if runs == 6:
+            self.__sixes += 1
 
     def get_batsman(self):
         return self.__batsman
@@ -37,3 +45,9 @@ class HeadToHead:
 
     def get_dot_balls(self):
         return self.__dot_balls
+
+    def get_num_fours(self):
+        return self.__fours
+
+    def get_num_sixes(self):
+        return self.__sixes

@@ -6,7 +6,7 @@ class Commentary:
     def __init__(self, link, match_squad_ref):
         self.__short_name_to_full_name_map = {}
         self.__full_match_commentary = []
-        self.__head_to_head_object_cache = {}
+        self.__per_innings_head_to_head_object_cache = [{}, {}, {}, {}]
 
         # {"player_name" : "team_name", ......}
         self.__local_squad = {}
@@ -20,15 +20,24 @@ class Commentary:
             ball_commentary = commentary_block.text.split(',')
             self.__full_match_commentary.append(ball_commentary)
 
-    def get_head_to_head_data(self):
-        head_to_head_data = []
+    def get_per_innings_head_to_head_data(self):
+        curr_batsman_team = None
+        current_innings_num = 0
         for ball_commentary in self.__full_match_commentary:
             players = ball_commentary[0].split(" to ")
             if len(players) < 2:
                 continue
             batsman = self.__get_player_full_name_from_short_name(players[1].strip())
+            batsman_team = self.__local_squad[batsman]
             bowler = self.__get_player_full_name_from_short_name(players[0].strip())
-            head_to_head = self.__get_head_to_head_object(batsman, bowler)
+            bowler_team = self.__local_squad[bowler]
+            if curr_batsman_team is None :
+                curr_batsman_team = batsman_team
+            if curr_batsman_team != batsman_team:
+                current_innings_num += 1
+                curr_batsman_team = batsman_team
+            head_to_head = self.__get_head_to_head_object(batsman, batsman_team, bowler, bowler_team,
+                                                          current_innings_num)
             if len(ball_commentary) >= 3:
                 outcome = self.__get_outcome_of_a_ball(ball_commentary[1], ball_commentary[2])
             elif len(ball_commentary) >= 2:
@@ -36,11 +45,15 @@ class Commentary:
             else:
                 continue
             head_to_head.add_score(outcome['balls'], outcome['runs'], outcome['wicket'])
-        # Get list of head_to_head objects of this match
-        for batsman in self.__head_to_head_object_cache:
-            for bowler in self.__head_to_head_object_cache[batsman]:
-                head_to_head_data.append(self.__head_to_head_object_cache[batsman][bowler])
-        return head_to_head_data
+        # Get list of head_to_head objects of this match per innings
+        per_innings_head_to_head_data = []
+        for innings_head_to_head_object_cache in self.__per_innings_head_to_head_object_cache:
+            innings_head_to_head_data = []
+            for batsman in innings_head_to_head_object_cache:
+                for bowler in innings_head_to_head_object_cache[batsman]:
+                    innings_head_to_head_data.append(innings_head_to_head_object_cache[batsman][bowler])
+            per_innings_head_to_head_data.append(innings_head_to_head_data)
+        return per_innings_head_to_head_data
 
     def __get_player_full_name_from_short_name(self, name):
         if name not in self.__short_name_to_full_name_map.keys():
@@ -48,23 +61,30 @@ class Commentary:
             self.__short_name_to_full_name_map[name] = close_match
         return self.__short_name_to_full_name_map[name]
 
-    def __get_head_to_head_object(self, batsman_id, bowler_id):
-        if batsman_id in self.__head_to_head_object_cache:
-            if bowler_id not in self.__head_to_head_object_cache[batsman_id]:
-                self.__head_to_head_object_cache[batsman_id][bowler_id] = HeadToHead(batsman_id, bowler_id)
+    def __get_head_to_head_object(self, batsman, batsman_team, bowler, bowler_team, innings_num):
+        innings_head_to_head_object_cache = self.__per_innings_head_to_head_object_cache[innings_num]
+        if batsman in innings_head_to_head_object_cache:
+            if bowler not in innings_head_to_head_object_cache[batsman]:
+                innings_head_to_head_object_cache[batsman][bowler] = \
+                    HeadToHead(batsman, batsman_team,bowler, bowler_team)
         else:
-            self.__head_to_head_object_cache[batsman_id] = {}
-            self.__head_to_head_object_cache[batsman_id][bowler_id] = HeadToHead(batsman_id, bowler_id)
-        return self.__head_to_head_object_cache[batsman_id].get(bowler_id)
+            innings_head_to_head_object_cache[batsman] = {}
+            innings_head_to_head_object_cache[batsman][bowler] = \
+                HeadToHead(batsman, batsman_team,bowler, bowler_team)
+        return innings_head_to_head_object_cache[batsman].get(bowler)
 
     def __get_outcome_of_a_ball(self, ball_outcome_str, ball_outcome_str_extra):
+        outcome_match = False
         outcome = {'runs': 0, 'balls': 0, 'wicket': False, 'no_ball': False}
         ball_data_string = ball_outcome_str.strip()
         ball_data_string_extra = ball_outcome_str_extra.strip()
         for item in Common.ball_outcome_mapping:
             if item in ball_data_string:
                 outcome = Common.ball_outcome_mapping[item].copy()
+                outcome_match = True
                 break
+        if not outcome_match:
+            print(ball_data_string, ball_data_string_extra)
         if outcome['no_ball']:
             outcome_extra = self.__get_outcome_of_a_ball(ball_data_string_extra, "")
             outcome['runs'] = outcome_extra['runs']

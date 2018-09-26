@@ -35,7 +35,7 @@ class Match:
         self.__match_info = {}
         self.__match_squad = {}
         self.__innings_scores = []
-        self.__head_to_head_data = []
+        self.__per_innings_head_to_head_data = []
         self.__logger = logging.getLogger(__name__)
 
     def get_match_id(self):
@@ -70,13 +70,13 @@ class Match:
             "extract_match_data: match_link = {}, thread = {}".format(self.__match_link, threading.current_thread().name))
         self.__logger.info("series_squad_len: " + str(len(list(series_squad_ref.keys()))))
         self.__extract_match_info_squad_and_scores(series_squad_ref)
-        self.__extract_head_to_head_data()
+        self.__extract_per_innings_head_to_head_data()
 
     def get_match_innings_scores(self):
         return self.__innings_scores
 
-    def get_head_to_head_data(self):
-        return self.__head_to_head_data
+    def get_per_innings_head_to_head_data(self):
+        return self.__per_innings_head_to_head_data
 
     def get_match_playing_teams(self):
         return self.__playing_teams
@@ -100,9 +100,9 @@ class Match:
             innings_score_object.set_bowling_scores(self.__extract_innings_bowling_scores(innings_bowling_block))
             self.__innings_scores.append(innings_score_object)
 
-    def __extract_head_to_head_data(self):
+    def __extract_per_innings_head_to_head_data(self):
         commentary = Commentary(self.__match_link, self.__match_squad)
-        self.__head_to_head_data = commentary.get_head_to_head_data()
+        self.__per_innings_head_to_head_data = commentary.get_per_innings_head_to_head_data()
 
     def __extract_match_info(self, soup):
         match_info_items = soup.find_all('div', class_='cb-col cb-col-100 cb-mtch-info-itm')
