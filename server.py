@@ -54,7 +54,7 @@ class Server:
             self.logger.info("response to client ({})-  {}".format(sid, response))
             await sio.emit('response', response, room=sid)
 
-        web.run_app(app, host='192.168.0.105', port=5678)
+        web.run_app(app, host='192.168.0.103', port=5678)
 
     def event_handler(self, event_type, event_data):
         response = None
@@ -91,13 +91,5 @@ class Server:
         else:
             response_type = None
             response_data = None
-        response = {'type': response_type, 'data': response_data}
+        response = {'response_type': response_type, 'response_data': response_data}
         return response
-
-
-# file_dir = os.path.split(os.path.realpath(__file__))[0]
-# file_name = file_dir + '\logs.txt'
-# logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-#                     datefmt='%m/%d/%Y %I:%M:%S %p', filename=file_name, level=logging.INFO)
-# server = Server()
-# server.setup()

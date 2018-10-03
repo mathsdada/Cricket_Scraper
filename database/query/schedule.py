@@ -38,8 +38,7 @@ class Schedule:
 
     def __get_player_info(self, player_id):
         sql = """select name as player_name, role as player_role,
-                        batting_style as player_batting_style, bowling_style as player_bowling_style,
-                        gender as player_gender
+                        batting_style as player_batting_style, bowling_style as player_bowling_style
                  from schedule_player where id = %s"""
         self.cursor.execute(sql, (player_id, ))
         query_results = Common.extract_query_results(self.cursor)
