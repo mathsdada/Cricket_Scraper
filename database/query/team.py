@@ -6,34 +6,50 @@ class Team:
         self.cursor = db_cursor
 
     def get_team_stats(self, format, team_name):
+        # team_id = self.__get_team_id(team_name)
+        # matches = self.__get_team_matches_list(team_id, format)
+        # team_stats = {'form': self.__get_team_form(team_id, matches),
+        #               'recent_matches': self.__get_recent_match_scores(matches)
+        #               }
+        return None
+
+    def get_team_form(self, team_name, venue, format):
         team_id = self.__get_team_id(team_name)
         matches = self.__get_team_matches_list(team_id, format)
-        team_stats = {'form': self.__get_team_form(team_id, matches),
-                      'recent_matches': self.__get_recent_match_scores(matches)
-                      }
-        return team_stats
-
-    def __get_team_form(self, team_id, matches):
         json_matches = []
         # Win - Loss like (W L L W W W L L). Get opposite team name as well.
         for match in matches:
             team_ids = match['teams']
             outcome = match['outcome']
             winning_team_id = match['winning_team_id']
-
             # get Opposite Team
             if team_ids[0] == team_id:
                 opp_team_id = team_ids[1]
             else:
                 opp_team_id = team_ids[0]
             opp_team_short_name = self.__get_team_short_name_from_id(opp_team_id)
-
             # get whether Team won the match or lost.
             if outcome == 'WIN' and team_id != winning_team_id:
                 outcome = "LOST"
             json_matches.append(
                 {'outcome': outcome, 'opp_team': opp_team_short_name})
-        return json_matches
+        return {"overall": json_matches, "atVenue": json_matches}
+
+    def get_batting_most_runs(self, team_name, venue, format, squad):
+        team_id = self.__get_team_id(team_name)
+        sql = """WITH matches AS (SELECT id, date, teams FROM match WHERE %s = ANY(teams) AND format = %s
+                                 ORDER BY date DESC LIMIT 20),
+                     batsmen AS (SELECT batsman_id, innings_number, runs_scored, balls_played, matches.date,
+                                 matches.teams FROM batting_stats 
+                                 JOIN matches ON matches.id = match_id WHERE team_id = %s)
+                SELECT player.name as batsman, COUNT(innings_number) AS innings, SUM(runs_scored) AS runs,
+                       SUM(balls_played) AS balls FROM batsmen
+                JOIN player ON player.id = batsman_id WHERE player.name IN %s
+                GROUP BY player.name ORDER BY runs DESC"""
+        self.cursor.execute(sql, (team_id, format, team_id, tuple(squad)))
+        results = Common.extract_query_results(self.cursor)
+        print(results)
+        return {"overall": results, "atVenue": results}
 
     def __get_recent_match_scores(self, matches):
         match_score_cards_list = []

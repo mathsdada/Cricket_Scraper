@@ -1,13 +1,11 @@
 from server import Server
-# import os
-# import logging
-from flask import Flask
-from flask_restful import Resource, Api
-from webargs import fields
-from webargs.flaskparser import use_args
+from flask import Flask, json
+from flask_restful import Resource, Api, reqparse
+
 server = Server()
 app = Flask(__name__)
 api = Api(app)
+parser = reqparse.RequestParser()
 
 
 class Schedule(Resource):
@@ -15,10 +13,34 @@ class Schedule(Resource):
         return {"response_schedule": server.schedule_query.get_schedule()}
 
 
+class TeamStatsRecentForm(Resource):
+    def post(self):
+        parser.add_argument('team_name')
+        parser.add_argument('venue_name')
+        parser.add_argument("format")
+        args = parser.parse_args()
+        return server.team_query.get_team_form(
+            args['team_name'], args['venue_name'], args['format'])
+
+
+class TeamStatsBattingMostRuns(Resource):
+    def post(self):
+        parser.add_argument('team_name')
+        parser.add_argument('venue_name')
+        parser.add_argument('format')
+        parser.add_argument('squad', action='append')
+        args = parser.parse_args()
+        print(args)
+        return server.team_query.get_batting_most_runs(
+            args['team_name'], args['venue_name'], args['format'], args['squad'])
+
+
 api.add_resource(Schedule, '/schedule')
+api.add_resource(TeamStatsRecentForm, '/team_stats/recent_form')
+api.add_resource(TeamStatsBattingMostRuns, '/team_stats/batting/most_runs')
 
 if __name__ == "__main__":
-    app.run(host="192.168.0.101", debug=True)
+    app.run(host="172.20.10.2", debug=True)
 
 #
 # file_dir = os.path.split(os.path.realpath(__file__))[0]

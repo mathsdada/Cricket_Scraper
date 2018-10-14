@@ -74,12 +74,11 @@ class Server:
         return response
 
     def handle_query(self, query_type, query_data):
-        if query_type == Interface.QUERY_SCHEDULE:
-            response_type = Interface.RESP_SCHEDULE
+        print(query_type, query_data)
+        if query_type == 'schedule':
             response_data = self.schedule_query.get_schedule()
         elif query_type == Interface.QUERY_TEAM_STATS:
             query_data = json.loads(query_data)
-            response_type = Interface.RESP_TEAM_STATS
             response_data = []
             format = query_data['format']
             teams = query_data['teams']
@@ -89,7 +88,5 @@ class Server:
                 response_data.append({'team_name': team_name,
                                       'team_stats': team_stats})
         else:
-            response_type = None
             response_data = None
-        response = {'response_type': response_type, 'response_data': response_data}
-        return response
+        return response_data
