@@ -5,14 +5,6 @@ class Team:
     def __init__(self, db_cursor):
         self.cursor = db_cursor
 
-    def get_team_stats(self, format, team_name):
-        # team_id = self.__get_team_id(team_name)
-        # matches = self.__get_team_matches_list(team_id, format)
-        # team_stats = {'form': self.__get_team_form(team_id, matches),
-        #               'recent_matches': self.__get_recent_match_scores(matches)
-        #               }
-        return None
-
     def get_team_form(self, team_name, venue, format):
         team_id = self.__get_team_id(team_name)
         matches = self.__get_team_matches_list(team_id, format)
@@ -46,10 +38,77 @@ class Team:
                        SUM(balls_played) AS balls FROM batsmen
                 JOIN player ON player.id = batsman_id WHERE player.name IN %s
                 GROUP BY player.name ORDER BY runs DESC"""
+        sql_venue = """WITH matches AS (SELECT id, date, teams FROM match WHERE %s = ANY(teams) AND format = %s
+                                      AND venue = %s
+                                      ORDER BY date DESC LIMIT 20),
+                          batsmen AS (SELECT batsman_id, innings_number, runs_scored, balls_played, matches.date,
+                                      matches.teams FROM batting_stats 
+                                      JOIN matches ON matches.id = match_id WHERE team_id = %s)
+                     SELECT player.name as batsman, COUNT(innings_number) AS innings, SUM(runs_scored) AS runs,
+                            SUM(balls_played) AS balls FROM batsmen
+                     JOIN player ON player.id = batsman_id WHERE player.name IN %s
+                     GROUP BY player.name ORDER BY runs DESC"""
         self.cursor.execute(sql, (team_id, format, team_id, tuple(squad)))
         results = Common.extract_query_results(self.cursor)
-        print(results)
-        return {"overall": results, "atVenue": results}
+        self.cursor.execute(sql_venue, (team_id, format, venue, team_id, tuple(squad)))
+        results_venue = Common.extract_query_results(self.cursor)
+        return {"overall": results, "atVenue": results_venue}
+
+    def get_best_batting_strike_rate(self, team_name, venue, format, squad):
+        team_id = self.__get_team_id(team_name)
+        sql = """WITH matches AS (SELECT id, date, teams FROM match WHERE %s = ANY(teams) AND format = %s
+                                 ORDER BY date DESC LIMIT 20),
+                     batsmen AS (SELECT batsman_id, innings_number, runs_scored, balls_played, matches.date,
+                                 matches.teams FROM batting_stats 
+                                 JOIN matches ON matches.id = match_id WHERE team_id = %s AND balls_played != 0)
+                SELECT player.name as batsman, COUNT(innings_number) AS innings, SUM(runs_scored) AS runs,
+                SUM(balls_played) AS balls, (SUM(runs_scored)*100/SUM(balls_played)) AS strike_rate FROM batsmen
+                JOIN player ON player.id = batsman_id WHERE player.name IN %s
+                GROUP BY player.name ORDER BY strike_rate DESC"""
+        sql_venue = """WITH matches AS (SELECT id, date, teams FROM match WHERE %s = ANY(teams) AND format = %s
+                                      AND venue = %s ORDER BY date DESC LIMIT 20),
+                          batsmen AS (SELECT batsman_id, innings_number, runs_scored, balls_played, matches.date,
+                                      matches.teams FROM batting_stats 
+                                      JOIN matches ON matches.id = match_id WHERE team_id = %s AND balls_played != 0)
+                      SELECT player.name as batsman, COUNT(innings_number) AS innings, SUM(runs_scored) AS runs,
+                      SUM(balls_played) AS balls, (SUM(runs_scored)*100/SUM(balls_played)) AS strike_rate FROM batsmen
+                      JOIN player ON player.id = batsman_id WHERE player.name IN %s
+                      GROUP BY player.name ORDER BY strike_rate DESC"""
+        self.cursor.execute(sql, (team_id, format, team_id, tuple(squad)))
+        results = Common.extract_query_results(self.cursor)
+        self.cursor.execute(sql_venue, (team_id, format, venue, team_id, tuple(squad)))
+        results_venue = Common.extract_query_results(self.cursor)
+        return {"overall": results, "atVenue": results_venue}
+
+    def get_most_50s(self, team_name, venue, format, squad):
+        team_id = self.__get_team_id(team_name)
+        sql = """WITH matches AS (SELECT id, date, teams FROM match WHERE %s = ANY(teams) and format = %s 
+                                        ORDER BY date DESC LIMIT 20),
+                     batsmen AS (SELECT batsman_id, innings_number, runs_scored, balls_played,
+                                        (runs_scored >= 50) AS is_fifty FROM batting_stats
+                                        JOIN matches ON matches.id = match_id WHERE team_id = %s),
+                     fifty_batsmen AS (SELECT player.name, COUNT(innings_number) AS innings,
+                                              SUM(runs_scored) AS runs, SUM(balls_played) AS balls,
+                                              SUM(is_fifty::int) AS fifties FROM batsmen
+                                              JOIN player ON player.id = batsman_id WHERE player.name IN %s
+                                              GROUP BY player.name ORDER BY fifties DESC, runs DESC)
+                SELECT * FROM fifty_batsmen WHERE fifties != 0"""
+        sql_venue = """WITH matches AS (SELECT id FROM match WHERE %s = ANY(teams) AND format = %s 
+                                      AND venue = %s ORDER BY date DESC LIMIT 20),
+                          batsmen AS (SELECT batsman_id, innings_number, runs_scored, balls_played,
+                                             (runs_scored >= 50) AS is_fifty FROM batting_stats
+                                             JOIN matches ON matches.id = match_id WHERE team_id = %s),
+                          fifty_batsmen AS (SELECT player.name, COUNT(innings_number) AS innings,
+                                                   SUM(runs_scored) AS runs, SUM(balls_played) AS balls,
+                                                   SUM(is_fifty::int) AS fifties FROM batsmen
+                                                   JOIN player ON player.id = batsman_id WHERE player.name IN %s
+                                                   GROUP BY player.name ORDER BY fifties DESC, runs DESC)
+                     SELECT * FROM fifty_batsmen WHERE fifties != 0"""
+        self.cursor.execute(sql, (team_id, format, team_id, tuple(squad)))
+        results = Common.extract_query_results(self.cursor)
+        self.cursor.execute(sql_venue, (team_id, format, venue, team_id, tuple(squad)))
+        results_venue = Common.extract_query_results(self.cursor)
+        return {"overall": results, "atVenue": results_venue}
 
     def __get_recent_match_scores(self, matches):
         match_score_cards_list = []
@@ -124,3 +183,11 @@ class Team:
                 ORDER BY date desc LIMIT %s"""
         self.cursor.execute(sql, (team_id, format, 20))
         return Common.extract_query_results(self.cursor)
+
+    def get_team_stats(self, format, team_name):
+        # team_id = self.__get_team_id(team_name)
+        # matches = self.__get_team_matches_list(team_id, format)
+        # team_stats = {'form': self.__get_team_form(team_id, matches),
+        #               'recent_matches': self.__get_recent_match_scores(matches)
+        #               }
+        return None
