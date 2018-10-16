@@ -166,3 +166,11 @@ class Common:
             return "Women"
         else:
             return "Unknown"
+
+    @staticmethod
+    def convert_overs_to_balls(overs):
+        overs_split = overs.split('.')
+        balls = int(overs_split[0]) * 6
+        if len(overs_split) == 2:
+            balls += int(overs_split[1])
+        return balls
