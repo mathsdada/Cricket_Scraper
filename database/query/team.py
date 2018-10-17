@@ -300,8 +300,49 @@ class Team:
         results_venue = Common.extract_query_results(self.cursor)
         return {"overall": results, "atVenue": results_venue}
 
-    def get_runs_against_bowling_styles(self, team_name, venue, format, squad, bowling_styles):
-        pass
+    def get_runs_against_bowling_styles(self, team_name, venue, format, batsmen, bowling_styles):
+        sql = """WITH matches AS (SELECT id FROM match WHERE %s = ANY(teams) AND format = %s ORDER BY date DESC LIMIT 20)
+                SELECT bowler.bowling_style, SUM(balls) AS balls, SUM(runs) AS runs, SUM(wickets) AS wickets, (100*SUM(runs)/SUM(balls)) AS strike_rate FROM head_to_head_stats JOIN matches ON matches.id = match_id
+                       JOIN player AS batsman ON batsman.id = batsman_id
+                       JOIN player AS bowler ON bowler.id = bowler_id
+                       WHERE batsman.name IN %s AND bowler.bowling_style IN %s
+                       GROUP BY bowler.bowling_style
+                       ORDER BY wickets DESC, strike_rate"""
+        sql_venue = """WITH matches AS (SELECT id FROM match WHERE %s = ANY(teams) AND format = %s AND venue = %s ORDER BY date DESC LIMIT 20)
+                        SELECT bowler.bowling_style, SUM(balls) AS balls, SUM(runs) AS runs, SUM(wickets) AS wickets, (100*SUM(runs)/SUM(balls)) AS strike_rate FROM head_to_head_stats JOIN matches ON matches.id = match_id
+                               JOIN player AS batsman ON batsman.id = batsman_id
+                               JOIN player AS bowler ON bowler.id = bowler_id
+                               WHERE batsman.name IN %s AND bowler.bowling_style IN %s
+                               GROUP BY bowler.bowling_style
+                               ORDER BY wickets DESC, strike_rate"""
+        team_id = self.__get_team_id(team_name)
+        self.cursor.execute(sql, (team_id, format, tuple(batsmen), tuple(bowling_styles)))
+        results = Common.extract_query_results(self.cursor)
+        self.cursor.execute(sql_venue, (team_id, format, venue, tuple(batsmen), tuple(bowling_styles)))
+        results_venue = Common.extract_query_results(self.cursor)
+        return {"overall": results, "atVenue": results_venue}
+
+    def get_runs_against_bowlers(self, team_name, venue, format, batsmen, bowlers):
+        sql = """WITH matches AS (SELECT id FROM match WHERE %s = ANY(teams) AND format = %s ORDER BY date DESC LIMIT 20)
+                SELECT bowler.name as bowler, COUNT(match_id) as matches, SUM(balls) AS balls, SUM(runs) AS runs, SUM(wickets) AS wickets, (100*SUM(runs)/SUM(balls)) AS strike_rate FROM head_to_head_stats JOIN matches ON matches.id = match_id
+                       JOIN player AS batsman ON batsman.id = batsman_id
+                       JOIN player AS bowler ON bowler.id = bowler_id
+                       WHERE batsman.name IN %s AND bowler.name IN %s
+                       GROUP BY bowler.name
+                       ORDER BY wickets DESC, strike_rate"""
+        sql_venue = """WITH matches AS (SELECT id FROM match WHERE %s = ANY(teams) AND format = %s AND venue = %s ORDER BY date DESC LIMIT 20)
+                        SELECT bowler.name as bowler, COUNT(match_id) AS matches, SUM(balls) AS balls, SUM(runs) AS runs, SUM(wickets) AS wickets, (100*SUM(runs)/SUM(balls)) AS strike_rate FROM head_to_head_stats JOIN matches ON matches.id = match_id
+                               JOIN player AS batsman ON batsman.id = batsman_id
+                               JOIN player AS bowler ON bowler.id = bowler_id
+                               WHERE batsman.name IN %s AND bowler.name IN %s
+                               GROUP BY bowler.name
+                               ORDER BY wickets DESC, strike_rate"""
+        team_id = self.__get_team_id(team_name)
+        self.cursor.execute(sql, (team_id, format, tuple(batsmen), tuple(bowlers)))
+        results = Common.extract_query_results(self.cursor)
+        self.cursor.execute(sql_venue, (team_id, format, venue, tuple(batsmen), tuple(bowlers)))
+        results_venue = Common.extract_query_results(self.cursor)
+        return {"overall": results, "atVenue": results_venue}
 
     def __get_recent_match_scores(self, matches):
         match_score_cards_list = []
