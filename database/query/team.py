@@ -186,10 +186,10 @@ class Team:
         team_id = self.__get_team_id(team_name)
         sql = """WITH matches AS (SELECT id FROM match WHERE %s = ANY(teams) AND format = %s ORDER BY date DESC LIMIT 20),
                      bowlers AS (SELECT bowler_id, innings_number, wickets_taken FROM bowling_stats JOIN matches ON matches.id = match_id WHERE team_id = %s)
-                SELECT player.name, COUNT(innings_number) AS innings, SUM(wickets_taken) AS wickets FROM bowlers JOIN player ON player.id = bowler_id WHERE player.name IN %s GROUP BY player.name ORDER BY wickets DESC"""
+                SELECT player.name as bowler, COUNT(innings_number) AS innings, SUM(wickets_taken) AS wickets FROM bowlers JOIN player ON player.id = bowler_id WHERE player.name IN %s GROUP BY player.name ORDER BY wickets DESC"""
         sql_venue = """WITH matches AS (SELECT id FROM match WHERE %s = ANY(teams) AND format = %s AND venue = %s ORDER BY date DESC LIMIT 20),
                           bowlers AS (SELECT bowler_id, innings_number, wickets_taken FROM bowling_stats JOIN matches ON matches.id = match_id WHERE team_id = %s)
-                     SELECT player.name, COUNT(innings_number) AS innings, SUM(wickets_taken) AS wickets FROM bowlers JOIN player ON player.id = bowler_id WHERE player.name IN %s GROUP BY player.name ORDER BY wickets DESC"""
+                     SELECT player.name as bowler, COUNT(innings_number) AS innings, SUM(wickets_taken) AS wickets FROM bowlers JOIN player ON player.id = bowler_id WHERE player.name IN %s GROUP BY player.name ORDER BY wickets DESC"""
         self.cursor.execute(sql, (team_id, format, team_id, tuple(squad)))
         results = Common.extract_query_results(self.cursor)
         self.cursor.execute(sql_venue, (team_id, format, venue, team_id, tuple(squad)))
@@ -200,10 +200,10 @@ class Team:
         team_id = self.__get_team_id(team_name)
         sql = """WITH matches AS (SELECT id FROM match WHERE %s = ANY(teams) AND format = %s ORDER BY date DESC LIMIT 20),
                      bowlers AS (SELECT bowler_id, innings_number, wickets_taken, economy FROM bowling_stats JOIN matches ON matches.id = match_id WHERE team_id = %s AND economy != 0)
-                SELECT player.name, COUNT(innings_number) AS innings, SUM(wickets_taken) AS wickets , ROUND(AVG(economy),1) as economy FROM bowlers JOIN player ON player.id = bowler_id WHERE player.name IN %s GROUP BY player.name ORDER BY economy"""
+                SELECT player.name as bowler, COUNT(innings_number) AS innings, SUM(wickets_taken) AS wickets , ROUND(AVG(economy),1)::text as economy FROM bowlers JOIN player ON player.id = bowler_id WHERE player.name IN %s GROUP BY player.name ORDER BY economy"""
         sql_venue = """WITH matches AS (SELECT id FROM match WHERE %s = ANY(teams) AND format = %s AND venue = %s ORDER BY date DESC LIMIT 20),
                           bowlers AS (SELECT bowler_id, innings_number, wickets_taken, economy FROM bowling_stats JOIN matches ON matches.id = match_id WHERE team_id = %s AND economy != 0)
-                     SELECT player.name, COUNT(innings_number) AS innings, SUM(wickets_taken) AS wickets , ROUND(AVG(economy),1) as economy FROM bowlers JOIN player ON player.id = bowler_id WHERE player.name IN %s GROUP BY player.name ORDER BY economy"""
+                     SELECT player.name as bowler, COUNT(innings_number) AS innings, SUM(wickets_taken) AS wickets , ROUND(AVG(economy),1)::text as economy FROM bowlers JOIN player ON player.id = bowler_id WHERE player.name IN %s GROUP BY player.name ORDER BY economy"""
         self.cursor.execute(sql, (team_id, format, team_id, tuple(squad)))
         results = Common.extract_query_results(self.cursor)
         self.cursor.execute(sql_venue, (team_id, format, venue, team_id, tuple(squad)))
@@ -215,11 +215,11 @@ class Team:
         sql = """WITH matches AS (SELECT id FROM match WHERE %s = ANY(teams) AND format = %s ORDER BY date DESC LIMIT 20),
                      bowlers AS (SELECT bowler_id, innings_number, wickets_taken, balls_bowled, economy FROM bowling_stats JOIN matches ON matches.id = match_id WHERE team_id = %s),
 	                  players AS (SELECT player_id, COUNT(innings_number) AS innings, SUM(wickets_taken) AS wickets , ROUND(AVG(economy),1) as economy, SUM(balls_bowled) as balls FROM bowlers WHERE wickets != 0)
-                SELECT player.name, innings, wickets, economy, (balls/wickets) AS strike_rate FROM players JOIN player ON player.id = player_id WHERE player.name IN %s GROUP BY player.name ORDER BY strike_rate"""
+                SELECT player.name as bowler, innings, wickets, economy, (balls/wickets) AS strike_rate FROM players JOIN player ON player.id = player_id WHERE player.name IN %s GROUP BY player.name ORDER BY strike_rate"""
         sql_venue = """WITH matches AS (SELECT id FROM match WHERE %s = ANY(teams) AND format = %s AND venue = %s ORDER BY date DESC LIMIT 20),
                           bowlers AS (SELECT bowler_id, innings_number, wickets_taken, balls_bowled, economy FROM bowling_stats JOIN matches ON matches.id = match_id WHERE team_id = %s),
 	                       players AS (SELECT player_id, COUNT(innings_number) AS innings, SUM(wickets_taken) AS wickets , ROUND(AVG(economy),1) as economy, SUM(balls_bowled) as balls FROM bowlers WHERE wickets != 0)
-                     SELECT player.name, innings, wickets, economy, (balls/wickets) AS strike_rate FROM players JOIN player ON player.id = player_id WHERE player.name IN %s GROUP BY player.name ORDER BY strike_rate"""
+                     SELECT player.name as bowler, innings, wickets, economy, (balls/wickets) AS strike_rate FROM players JOIN player ON player.id = player_id WHERE player.name IN %s GROUP BY player.name ORDER BY strike_rate"""
         self.cursor.execute(sql, (team_id, format, team_id, tuple(squad)))
         results = Common.extract_query_results(self.cursor)
         self.cursor.execute(sql_venue, (team_id, format, venue, team_id, tuple(squad)))
@@ -230,11 +230,11 @@ class Team:
         team_id = self.__get_team_id(team_name)
         sql = """WITH matches AS (SELECT id FROM match WHERE %s = ANY(teams) AND format = %s ORDER BY date DESC LIMIT 20),
                      bowlers AS (SELECT bowler_id, innings_number, wickets_taken, economy, (wickets_taken >= 4) AS is_four_plus FROM bowling_stats JOIN matches ON matches.id = match_id WHERE team_id = %s),
-	                 four_plus_bowlers AS (SELECT player.name, COUNT(innings_number) AS innings, SUM(wickets_taken) AS wickets , ROUND(AVG(economy),1) as economy, SUM(is_four_plus::int) as four_plus FROM bowlers JOIN player ON player.id = bowler_id WHERE player.name IN %s GROUP BY player.name ORDER BY four_plus DESC)
+	                 four_plus_bowlers AS (SELECT player.name as bowler, COUNT(innings_number) AS innings, SUM(wickets_taken) AS wickets , ROUND(AVG(economy),1)::text as economy, SUM(is_four_plus::int) as four_plus FROM bowlers JOIN player ON player.id = bowler_id WHERE player.name IN %s GROUP BY player.name ORDER BY four_plus DESC)
                 SELECT * FROM four_plus_bowlers WHERE four_plus != 0"""
         sql_venue = """WITH matches AS (SELECT id FROM match WHERE %s = ANY(teams) AND format = %s AND venue = %s ORDER BY date DESC LIMIT 20),
                           bowlers AS (SELECT bowler_id, innings_number, wickets_taken, economy, (wickets_taken >= 4) AS is_four_plus FROM bowling_stats JOIN matches ON matches.id = match_id WHERE team_id = %s),
-	                      four_plus_bowlers AS (SELECT player.name, COUNT(innings_number) AS innings, SUM(wickets_taken) AS wickets , ROUND(AVG(economy),1) as economy, SUM(is_four_plus::int) as four_plus FROM bowlers JOIN player ON player.id = bowler_id WHERE player.name IN %s GROUP BY player.name ORDER BY four_plus DESC)
+	                      four_plus_bowlers AS (SELECT player.name as bowler, COUNT(innings_number) AS innings, SUM(wickets_taken) AS wickets , ROUND(AVG(economy),1)::text as economy, SUM(is_four_plus::int) as four_plus FROM bowlers JOIN player ON player.id = bowler_id WHERE player.name IN %s GROUP BY player.name ORDER BY four_plus DESC)
                      SELECT * FROM four_plus_bowlers WHERE four_plus != 0"""
         self.cursor.execute(sql, (team_id, format, team_id, tuple(squad)))
         results = Common.extract_query_results(self.cursor)
@@ -246,11 +246,11 @@ class Team:
         team_id = self.__get_team_id(team_name)
         sql = """WITH matches AS (SELECT id FROM match WHERE %s = ANY(teams) AND format = %s ORDER BY date DESC LIMIT 20),
                      bowlers AS (SELECT bowler_id, innings_number, wickets_taken, economy, (wickets_taken >= 5) AS is_five_plus FROM bowling_stats JOIN matches ON matches.id = match_id WHERE team_id = %s),
-	                 five_plus_bowlers AS (SELECT player.name, COUNT(innings_number) AS innings, SUM(wickets_taken) AS wickets , ROUND(AVG(economy),1) as economy, SUM(is_five_plus::int) as five_plus FROM bowlers JOIN player ON player.id = bowler_id WHERE player.name IN %s GROUP BY player.name ORDER BY five_plus DESC)
+	                 five_plus_bowlers AS (SELECT player.name as bowler, COUNT(innings_number) AS innings, SUM(wickets_taken) AS wickets , ROUND(AVG(economy),1)::text as economy, SUM(is_five_plus::int) as five_plus FROM bowlers JOIN player ON player.id = bowler_id WHERE player.name IN %s GROUP BY player.name ORDER BY five_plus DESC)
                 SELECT * FROM five_plus_bowlers WHERE five_plus != 0	 """
         sql_venue = """WITH matches AS (SELECT id FROM match WHERE %s = ANY(teams) AND format = %s AND venue = %s ORDER BY date DESC LIMIT 20),
                           bowlers AS (SELECT bowler_id, innings_number, wickets_taken, economy, (wickets_taken >= 5) AS is_five_plus FROM bowling_stats JOIN matches ON matches.id = match_id WHERE team_id = %s),
-	                      five_plus_bowlers AS (SELECT player.name, COUNT(innings_number) AS innings, SUM(wickets_taken) AS wickets , ROUND(AVG(economy),1) as economy, SUM(is_five_plus::int) as five_plus FROM bowlers JOIN player ON player.id = bowler_id WHERE player.name IN %s GROUP BY player.name ORDER BY five_plus DESC)
+	                      five_plus_bowlers AS (SELECT player.name as bowler, COUNT(innings_number) AS innings, SUM(wickets_taken) AS wickets , ROUND(AVG(economy),1)::text as economy, SUM(is_five_plus::int) as five_plus FROM bowlers JOIN player ON player.id = bowler_id WHERE player.name IN %s GROUP BY player.name ORDER BY five_plus DESC)
                       SELECT * FROM five_plus_bowlers WHERE five_plus != 0"""
         self.cursor.execute(sql, (team_id, format, team_id, tuple(squad)))
         results = Common.extract_query_results(self.cursor)
@@ -276,10 +276,10 @@ class Team:
         team_id = self.__get_team_id(team_name)
         sql = """WITH matches AS (SELECT id FROM match WHERE %s = ANY(teams) AND format = %s ORDER BY date DESC LIMIT 20),
                      bowlers AS (SELECT bowler_id, wickets_taken, overs_bowled, runs_given FROM bowling_stats JOIN matches ON matches.id = match_id WHERE team_id = %s)
-                SELECT player.name, wickets_taken AS wickets, overs_bowled AS balls, runs_given AS runs FROM bowlers JOIN player ON player.id = bowler_id WHERE player.name IN %s ORDER BY runs DESC, overs_bowled LIMIT 20"""
+                SELECT player.name as bowler, wickets_taken AS wickets, overs_bowled::text AS overs, runs_given AS runs FROM bowlers JOIN player ON player.id = bowler_id WHERE player.name IN %s ORDER BY runs DESC, overs_bowled LIMIT 20"""
         sql_venue = """WITH matches AS (SELECT id FROM match WHERE %s = ANY(teams) AND format = %s AND venue = %s ORDER BY date DESC LIMIT 20),
                           bowlers AS (SELECT bowler_id, wickets_taken, overs_bowled, runs_given FROM bowling_stats JOIN matches ON matches.id = match_id WHERE team_id = %s)
-                      SELECT player.name, wickets_taken AS wickets, overs_bowled AS balls, runs_given AS runs FROM bowlers JOIN player ON player.id = bowler_id WHERE player.name IN %s ORDER BY runs DESC, overs_bowled LIMIT 20"""
+                      SELECT player.name as bowler, wickets_taken AS wickets, overs_bowled::text AS overs, runs_given AS runs FROM bowlers JOIN player ON player.id = bowler_id WHERE player.name IN %s ORDER BY runs DESC, overs_bowled LIMIT 20"""
         self.cursor.execute(sql, (team_id, format, team_id, tuple(squad)))
         results = Common.extract_query_results(self.cursor)
         self.cursor.execute(sql_venue, (team_id, format, venue, team_id, tuple(squad)))
@@ -289,10 +289,10 @@ class Team:
     def get_best_bowling_figure_in_innings(self, team_name, venue, format, squad):
         sql = """WITH matches AS (SELECT id FROM match WHERE %s = ANY(teams) AND format = %s ORDER BY date DESC LIMIT 20),
                      bowlers AS (SELECT bowler_id, wickets_taken, overs_bowled, runs_given FROM bowling_stats JOIN matches ON matches.id = match_id WHERE team_id = %s)
-                SELECT player.name, wickets_taken AS wickets, runs_given AS runs, overs_bowled AS overs FROM bowlers JOIN player ON player.id = bowler_id WHERE player.name IN %s ORDER BY wickets DESC, runs LIMIT 20"""
+                SELECT player.name as bowler, wickets_taken AS wickets, runs_given AS runs, overs_bowled::text AS overs FROM bowlers JOIN player ON player.id = bowler_id WHERE player.name IN %s ORDER BY wickets DESC, runs LIMIT 20"""
         sql_venue = """WITH matches AS (SELECT id FROM match WHERE %s = ANY(teams) AND format = %s AND venue = %s ORDER BY date DESC LIMIT 20),
                           bowlers AS (SELECT bowler_id, wickets_taken, overs_bowled, runs_given FROM bowling_stats JOIN matches ON matches.id = match_id WHERE team_id = %s)
-                     SELECT player.name, wickets_taken AS wickets, runs_given AS runs, overs_bowled AS overs FROM bowlers JOIN player ON player.id = bowler_id WHERE player.name IN %s ORDER BY wickets DESC, runs LIMIT 20"""
+                     SELECT player.name as bowler, wickets_taken AS wickets, runs_given AS runs, overs_bowled::text AS overs FROM bowlers JOIN player ON player.id = bowler_id WHERE player.name IN %s ORDER BY wickets DESC, runs LIMIT 20"""
         team_id = self.__get_team_id(team_name)
         self.cursor.execute(sql, (team_id, format, team_id, tuple(squad)))
         results = Common.extract_query_results(self.cursor)
@@ -302,14 +302,14 @@ class Team:
 
     def get_runs_against_bowling_styles(self, team_name, venue, format, batsmen, bowling_styles):
         sql = """WITH matches AS (SELECT id FROM match WHERE %s = ANY(teams) AND format = %s ORDER BY date DESC LIMIT 20)
-                SELECT bowler.bowling_style, SUM(balls) AS balls, SUM(runs) AS runs, SUM(wickets) AS wickets, (100*SUM(runs)/SUM(balls)) AS strike_rate FROM head_to_head_stats JOIN matches ON matches.id = match_id
+                SELECT bowler.bowling_style, COUNT(DISTINCT matches.id) as matches, SUM(balls) AS balls, SUM(runs) AS runs, SUM(wickets) AS wickets, (100*SUM(runs)/SUM(balls)) AS strike_rate FROM head_to_head_stats JOIN matches ON matches.id = match_id
                        JOIN player AS batsman ON batsman.id = batsman_id
                        JOIN player AS bowler ON bowler.id = bowler_id
                        WHERE batsman.name IN %s AND bowler.bowling_style IN %s
                        GROUP BY bowler.bowling_style
                        ORDER BY wickets DESC, strike_rate"""
         sql_venue = """WITH matches AS (SELECT id FROM match WHERE %s = ANY(teams) AND format = %s AND venue = %s ORDER BY date DESC LIMIT 20)
-                        SELECT bowler.bowling_style, SUM(balls) AS balls, SUM(runs) AS runs, SUM(wickets) AS wickets, (100*SUM(runs)/SUM(balls)) AS strike_rate FROM head_to_head_stats JOIN matches ON matches.id = match_id
+                        SELECT bowler.bowling_style, COUNT(DISTINCT matches.id) as matches, SUM(balls) AS balls, SUM(runs) AS runs, SUM(wickets) AS wickets, (100*SUM(runs)/SUM(balls)) AS strike_rate FROM head_to_head_stats JOIN matches ON matches.id = match_id
                                JOIN player AS batsman ON batsman.id = batsman_id
                                JOIN player AS bowler ON bowler.id = bowler_id
                                WHERE batsman.name IN %s AND bowler.bowling_style IN %s
@@ -324,14 +324,14 @@ class Team:
 
     def get_runs_against_bowlers(self, team_name, venue, format, batsmen, bowlers):
         sql = """WITH matches AS (SELECT id FROM match WHERE %s = ANY(teams) AND format = %s ORDER BY date DESC LIMIT 20)
-                SELECT bowler.name as bowler, COUNT(match_id) as matches, SUM(balls) AS balls, SUM(runs) AS runs, SUM(wickets) AS wickets, (100*SUM(runs)/SUM(balls)) AS strike_rate FROM head_to_head_stats JOIN matches ON matches.id = match_id
+                SELECT bowler.name as bowler, COUNT(DISTINCT matches.id) as matches, SUM(balls) AS balls, SUM(runs) AS runs, SUM(wickets) AS wickets, (100*SUM(runs)/SUM(balls)) AS strike_rate FROM head_to_head_stats JOIN matches ON matches.id = match_id
                        JOIN player AS batsman ON batsman.id = batsman_id
                        JOIN player AS bowler ON bowler.id = bowler_id
                        WHERE batsman.name IN %s AND bowler.name IN %s
                        GROUP BY bowler.name
                        ORDER BY wickets DESC, strike_rate"""
         sql_venue = """WITH matches AS (SELECT id FROM match WHERE %s = ANY(teams) AND format = %s AND venue = %s ORDER BY date DESC LIMIT 20)
-                        SELECT bowler.name as bowler, COUNT(match_id) AS matches, SUM(balls) AS balls, SUM(runs) AS runs, SUM(wickets) AS wickets, (100*SUM(runs)/SUM(balls)) AS strike_rate FROM head_to_head_stats JOIN matches ON matches.id = match_id
+                        SELECT bowler.name as bowler, COUNT(DISTINCT matches.id) AS matches, SUM(balls) AS balls, SUM(runs) AS runs, SUM(wickets) AS wickets, (100*SUM(runs)/SUM(balls)) AS strike_rate FROM head_to_head_stats JOIN matches ON matches.id = match_id
                                JOIN player AS batsman ON batsman.id = batsman_id
                                JOIN player AS bowler ON bowler.id = bowler_id
                                WHERE batsman.name IN %s AND bowler.name IN %s

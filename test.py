@@ -140,7 +140,7 @@ class TeamStatsBowlingBestStrikeRate(Resource):
         parser.add_argument('format')
         parser.add_argument('squad', action='append')
         args = parser.parse_args()
-        return server.team_query.get_best_batting_strike_rate(
+        return server.team_query.get_best_bowling_strike_rate(
             args['team_name'], args['venue_name'], args['format'], args['squad'])
 
 
@@ -254,7 +254,7 @@ api.add_resource(TeamStatsHeadToHeadRunsVsBowlers, '/team_stats/head_to_head/run
 
 
 if __name__ == "__main__":
-    app.run(host="192.168.0.107", debug=True)
+    app.run(host="192.168.0.104", debug=True)
 
 #
 # file_dir = os.path.split(os.path.realpath(__file__))[0]
