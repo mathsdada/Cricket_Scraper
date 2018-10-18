@@ -116,10 +116,9 @@ class Controller:
                     player_objects = match.teams[team]['squad']
                     player_ids = []
                     for player_object in player_objects:
-                        player_table.insert(player_object.player_id, player_object.name, player_object.role,
-                                            player_object.batting_style, player_object.bowling_style,
-                                            series.gender)
-                        player_ids.append(int(player_object.player_id))
+                        player_table.insert(player_object.get_id(), player_object.get_name(), player_object.get_role(),
+                                            player_object.get_batting_style(), player_object.get_bowling_style())
+                        player_ids.append(int(player_object.get_id()))
                     team_ids.append(
                         team_table.insert(team, match.teams[team]['short_name'], player_ids))
                 match_table.insert(match.id, match.title, match.format, match.time, match.venue,

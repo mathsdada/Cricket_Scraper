@@ -10,7 +10,6 @@ class ScheduleScraper:
         pass
 
     def get_schedule(self):
-        # now = Common.get_date_now()
-        now = "Sep 21, 2018, Friday"
+        now = Common.get_date_now()
         sched = Schedule(now)
         return sched.get_list_of_series()

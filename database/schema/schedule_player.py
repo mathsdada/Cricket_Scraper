@@ -2,10 +2,10 @@ class Player:
     def __init__(self, cursor):
         self.cursor = cursor
 
-    def insert(self, id, name, role, batting_style, bowling_style, gender):
+    def insert(self, id, name, role, batting_style, bowling_style):
         sql = """INSERT INTO schedule_player VALUES(%s, %s, %s, %s, %s, %s)"""
         if not self.__check_player_id(id):
-            self.cursor.execute(sql, (id, name, role, batting_style, bowling_style, gender))
+            self.cursor.execute(sql, (id, name, role, batting_style, bowling_style, ""))
 
     def clear(self):
         sql = """DELETE FROM schedule_player"""

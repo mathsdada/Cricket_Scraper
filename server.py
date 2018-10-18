@@ -30,7 +30,7 @@ class Server:
         # self.update_database()
 
     def update_database(self):
-        self.controller.update_stats_database()
+        # self.controller.update_stats_database()
         self.controller.update_schedule_database()
         # start a timer to next scraping time..
 

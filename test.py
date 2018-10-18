@@ -1,5 +1,5 @@
 from server import Server
-from flask import Flask, json
+from flask import Flask, abort
 from flask_restful import Resource, Api, reqparse
 
 server = Server()
@@ -19,8 +19,26 @@ class TeamStatsRecentForm(Resource):
         parser.add_argument('venue_name')
         parser.add_argument("format")
         args = parser.parse_args()
-        return server.team_query.get_team_form(
+        response = server.team_query.get_team_form(
             args['team_name'], args['venue_name'], args['format'])
+        if response is None:
+            abort(404)
+        else:
+            return response
+
+
+class TeamStatsRecentMatchesScores(Resource):
+    def post(self):
+        parser.add_argument('team_name')
+        parser.add_argument('venue_name')
+        parser.add_argument("format")
+        args = parser.parse_args()
+        response = server.team_query.get_recent_match_scores(
+            args['team_name'], args['format'], args['venue_name'])
+        if response is None:
+            abort(404)
+        else:
+            return response
 
 
 class TeamStatsBattingMostRuns(Resource):
@@ -30,8 +48,12 @@ class TeamStatsBattingMostRuns(Resource):
         parser.add_argument('format')
         parser.add_argument('squad', action='append')
         args = parser.parse_args()
-        return server.team_query.get_batting_most_runs(
+        response = server.team_query.get_batting_most_runs(
             args['team_name'], args['venue_name'], args['format'], args['squad'])
+        if response is None:
+            abort(404)
+        else:
+            return response
 
 
 class TeamStatsBattingBestStrikeRate(Resource):
@@ -41,8 +63,12 @@ class TeamStatsBattingBestStrikeRate(Resource):
         parser.add_argument('format')
         parser.add_argument('squad', action='append')
         args = parser.parse_args()
-        return server.team_query.get_best_batting_strike_rate(
+        response = server.team_query.get_best_batting_strike_rate(
             args['team_name'], args['venue_name'], args['format'], args['squad'])
+        if response is None:
+            abort(404)
+        else:
+            return response
 
 
 class TeamStatsBattingMost50s(Resource):
@@ -52,8 +78,12 @@ class TeamStatsBattingMost50s(Resource):
         parser.add_argument('format')
         parser.add_argument('squad', action='append')
         args = parser.parse_args()
-        return server.team_query.get_most_50s(
+        response = server.team_query.get_most_50s(
             args['team_name'], args['venue_name'], args['format'], args['squad'])
+        if response is None:
+            abort(404)
+        else:
+            return response
 
 
 class TeamStatsBattingMost100s(Resource):
@@ -63,8 +93,12 @@ class TeamStatsBattingMost100s(Resource):
         parser.add_argument('format')
         parser.add_argument('squad', action='append')
         args = parser.parse_args()
-        return server.team_query.get_most_100s(
+        response = server.team_query.get_most_100s(
             args['team_name'], args['venue_name'], args['format'], args['squad'])
+        if response is None:
+            abort(404)
+        else:
+            return response
 
 
 class TeamStatsBattingMost4s(Resource):
@@ -74,8 +108,12 @@ class TeamStatsBattingMost4s(Resource):
         parser.add_argument('format')
         parser.add_argument('squad', action='append')
         args = parser.parse_args()
-        return server.team_query.get_most_4s(
+        response = server.team_query.get_most_4s(
             args['team_name'], args['venue_name'], args['format'], args['squad'])
+        if response is None:
+            abort(404)
+        else:
+            return response
 
 
 class TeamStatsBattingMost6s(Resource):
@@ -85,8 +123,12 @@ class TeamStatsBattingMost6s(Resource):
         parser.add_argument('format')
         parser.add_argument('squad', action='append')
         args = parser.parse_args()
-        return server.team_query.get_most_6s(
+        response = server.team_query.get_most_6s(
             args['team_name'], args['venue_name'], args['format'], args['squad'])
+        if response is None:
+            abort(404)
+        else:
+            return response
 
 
 class TeamStatsBattingMostDucks(Resource):
@@ -96,8 +138,12 @@ class TeamStatsBattingMostDucks(Resource):
         parser.add_argument('format')
         parser.add_argument('squad', action='append')
         args = parser.parse_args()
-        return server.team_query.get_most_ducks(
+        response = server.team_query.get_most_ducks(
             args['team_name'], args['venue_name'], args['format'], args['squad'])
+        if response is None:
+            abort(404)
+        else:
+            return response
 
 
 class TeamStatsBattingHighScores(Resource):
@@ -107,8 +153,12 @@ class TeamStatsBattingHighScores(Resource):
         parser.add_argument('format')
         parser.add_argument('squad', action='append')
         args = parser.parse_args()
-        return server.team_query.get_high_scores(
+        response = server.team_query.get_high_scores(
             args['team_name'], args['venue_name'], args['format'], args['squad'])
+        if response is None:
+            abort(404)
+        else:
+            return response
 
 
 class TeamStatsBowlingMostWickets(Resource):
@@ -118,8 +168,12 @@ class TeamStatsBowlingMostWickets(Resource):
         parser.add_argument('format')
         parser.add_argument('squad', action='append')
         args = parser.parse_args()
-        return server.team_query.get_most_wickets(
+        response = server.team_query.get_most_wickets(
             args['team_name'], args['venue_name'], args['format'], args['squad'])
+        if response is None:
+            abort(404)
+        else:
+            return response
 
 
 class TeamStatsBowlingBestEconomy(Resource):
@@ -129,8 +183,12 @@ class TeamStatsBowlingBestEconomy(Resource):
         parser.add_argument('format')
         parser.add_argument('squad', action='append')
         args = parser.parse_args()
-        return server.team_query.get_best_bowling_economy(
+        response = server.team_query.get_best_bowling_economy(
             args['team_name'], args['venue_name'], args['format'], args['squad'])
+        if response is None:
+            abort(404)
+        else:
+            return response
 
 
 class TeamStatsBowlingBestStrikeRate(Resource):
@@ -140,8 +198,12 @@ class TeamStatsBowlingBestStrikeRate(Resource):
         parser.add_argument('format')
         parser.add_argument('squad', action='append')
         args = parser.parse_args()
-        return server.team_query.get_best_bowling_strike_rate(
+        response = server.team_query.get_best_bowling_strike_rate(
             args['team_name'], args['venue_name'], args['format'], args['squad'])
+        if response is None:
+            abort(404)
+        else:
+            return response
 
 
 class TeamStatsBowlingMostFourPlusWickets(Resource):
@@ -151,8 +213,12 @@ class TeamStatsBowlingMostFourPlusWickets(Resource):
         parser.add_argument('format')
         parser.add_argument('squad', action='append')
         args = parser.parse_args()
-        return server.team_query.get_most_4_plus_wickets(
+        response = server.team_query.get_most_4_plus_wickets(
             args['team_name'], args['venue_name'], args['format'], args['squad'])
+        if response is None:
+            abort(404)
+        else:
+            return response
 
 
 class TeamStatsBowlingMostFivePlusWickets(Resource):
@@ -162,8 +228,12 @@ class TeamStatsBowlingMostFivePlusWickets(Resource):
         parser.add_argument('format')
         parser.add_argument('squad', action='append')
         args = parser.parse_args()
-        return server.team_query.get_most_5_plus_wickets(
+        response = server.team_query.get_most_5_plus_wickets(
             args['team_name'], args['venue_name'], args['format'], args['squad'])
+        if response is None:
+            abort(404)
+        else:
+            return response
 
 
 class TeamStatsBowlingMostMaidens(Resource):
@@ -173,8 +243,12 @@ class TeamStatsBowlingMostMaidens(Resource):
         parser.add_argument('format')
         parser.add_argument('squad', action='append')
         args = parser.parse_args()
-        return server.team_query.get_most_maidens(
+        response = server.team_query.get_most_maidens(
             args['team_name'], args['venue_name'], args['format'], args['squad'])
+        if response is None:
+            abort(404)
+        else:
+            return response
 
 
 class TeamStatsBowlingBestFigureInnings(Resource):
@@ -184,8 +258,12 @@ class TeamStatsBowlingBestFigureInnings(Resource):
         parser.add_argument('format')
         parser.add_argument('squad', action='append')
         args = parser.parse_args()
-        return server.team_query.get_best_bowling_figure_in_innings(
+        response = server.team_query.get_best_bowling_figure_in_innings(
             args['team_name'], args['venue_name'], args['format'], args['squad'])
+        if response is None:
+            abort(404)
+        else:
+            return response
 
 
 class TeamStatsBowlingMostRunsConcededInnings(Resource):
@@ -195,8 +273,12 @@ class TeamStatsBowlingMostRunsConcededInnings(Resource):
         parser.add_argument('format')
         parser.add_argument('squad', action='append')
         args = parser.parse_args()
-        return server.team_query.get_most_runs_conceded_in_innings(
+        response = server.team_query.get_most_runs_conceded_in_innings(
             args['team_name'], args['venue_name'], args['format'], args['squad'])
+        if response is None:
+            abort(404)
+        else:
+            return response
 
 
 class TeamStatsHeadToHeadRunsVsBowlingStyles(Resource):
@@ -207,8 +289,12 @@ class TeamStatsHeadToHeadRunsVsBowlingStyles(Resource):
         parser.add_argument('squad', action='append')  # Batsmen
         parser.add_argument('squad-2', action='append')  # Bowling Styles
         args = parser.parse_args()
-        return server.team_query.get_runs_against_bowling_styles(
+        response = server.team_query.get_runs_against_bowling_styles(
             args['team_name'], args['venue_name'], args['format'], args['squad'], args['squad-2'])
+        if response is None:
+            abort(404)
+        else:
+            return response
 
 
 class TeamStatsHeadToHeadRunsVsBowlers(Resource):
@@ -217,10 +303,15 @@ class TeamStatsHeadToHeadRunsVsBowlers(Resource):
         parser.add_argument('venue_name')
         parser.add_argument('format')
         parser.add_argument('squad', action='append')  # Batsmen
+        parser.add_argument('opp_team')
         parser.add_argument('squad-2', action='append')  # Bowlers
         args = parser.parse_args()
-        return server.team_query.get_runs_against_bowlers(
-            args['team_name'], args['venue_name'], args['format'], args['squad'], args['squad-2'])
+        response = server.team_query.get_runs_against_bowlers(
+            args['team_name'], args['venue_name'], args['format'], args['squad'], args['opp_team'], args['squad-2'])
+        if response is None:
+            abort(404)
+        else:
+            return response
 
 
 # Schedule
@@ -228,6 +319,7 @@ api.add_resource(Schedule, '/schedule')
 
 # Team Stats
 api.add_resource(TeamStatsRecentForm, '/team_stats/recent_form')
+api.add_resource(TeamStatsRecentMatchesScores, '/team_stats/recent_match_scores')
 
 api.add_resource(TeamStatsBattingMostRuns, '/team_stats/batting/most_runs')
 api.add_resource(TeamStatsBattingBestStrikeRate, '/team_stats/batting/best_strike_rate')
@@ -254,7 +346,7 @@ api.add_resource(TeamStatsHeadToHeadRunsVsBowlers, '/team_stats/head_to_head/run
 
 
 if __name__ == "__main__":
-    app.run(host="192.168.0.104", debug=True)
+    app.run(host="192.168.43.8", debug=True)
 
 #
 # file_dir = os.path.split(os.path.realpath(__file__))[0]
