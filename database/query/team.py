@@ -382,12 +382,12 @@ class Team:
         return {"overall": results, "atVenue": results_venue}
 
     def get_recent_match_scores(self, team_name, format, venue):
-        sql = """WITH matches AS (SELECT id, date FROM match WHERE %s = ANY(teams) AND format = %s ORDER BY date DESC LIMIT 20),
-                     matches_scores AS (SELECT innings_stats.match_id, matches.date, innings_stats.innings_number, team.name || '@' || runs || '-' || wickets || ' (' || overs || ')' AS score FROM innings_stats JOIN matches on matches.id = innings_stats.match_id JOIN team on team.id = innings_stats.batting_team_id ORDER BY date DESC, innings_number)
-                SELECT matches_scores.date::text AS match_date, string_agg(matches_scores.score, ', ') AS match_score FROM matches_scores GROUP BY matches_scores.date ORDER BY matches_scores.date DESC """
-        sql_venue = """WITH matches AS (SELECT id, date FROM match WHERE %s = ANY(teams) AND format = %s AND venue = %s ORDER BY date DESC LIMIT 20),
-                         matches_scores AS (SELECT innings_stats.match_id, matches.date, innings_stats.innings_number, team.name || '@' || runs || '-' || wickets || ' (' || overs || ')' AS score FROM innings_stats JOIN matches on matches.id = innings_stats.match_id JOIN team on team.id = innings_stats.batting_team_id ORDER BY date DESC, innings_number)
-                     SELECT matches_scores.date::text AS match_date, string_agg(matches_scores.score, ', ') AS match_score FROM matches_scores GROUP BY matches_scores.date ORDER BY matches_scores.date DESC """
+        sql = """WITH matches AS (SELECT id, date, venue FROM match WHERE %s = ANY(teams) AND format = %s ORDER BY date DESC LIMIT 20),
+     matches_scores AS (SELECT innings_stats.match_id, matches.date, matches.venue, innings_stats.innings_number, team.name || '@' || runs || '-' || wickets || ' (' || overs || ')' AS score FROM innings_stats JOIN matches on matches.id = innings_stats.match_id JOIN team on team.id = innings_stats.batting_team_id ORDER BY date DESC, innings_number)
+SELECT matches_scores.date::text AS match_date, matches_scores.venue as match_venue, string_agg(matches_scores.score, ', ') AS match_score FROM matches_scores GROUP BY matches_scores.date, matches_scores.venue ORDER BY matches_scores.date DESC"""
+        sql_venue = """WITH matches AS (SELECT id, date, venue FROM match WHERE %s = ANY(teams) AND format = %s AND venue = %s ORDER BY date DESC LIMIT 20),
+     matches_scores AS (SELECT innings_stats.match_id, matches.date, matches.venue, innings_stats.innings_number, team.name || '@' || runs || '-' || wickets || ' (' || overs || ')' AS score FROM innings_stats JOIN matches on matches.id = innings_stats.match_id JOIN team on team.id = innings_stats.batting_team_id ORDER BY date DESC, innings_number)
+SELECT matches_scores.date::text AS match_date, matches_scores.venue AS match_venue, string_agg(matches_scores.score, ', ') AS match_score FROM matches_scores GROUP BY matches_scores.date, matches_scores.venue ORDER BY matches_scores.date DESC"""
         team_id = self.__get_team_id(team_name)
         if team_id is None:
             return None
