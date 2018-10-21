@@ -382,22 +382,23 @@ class Team:
         return {"overall": results, "atVenue": results_venue}
 
     def get_recent_match_scores(self, team_name, format, venue):
-        sql = """WITH matches AS (SELECT id, date, venue FROM match WHERE %s = ANY(teams) AND format = %s ORDER BY date DESC LIMIT 20),
-     matches_scores AS (SELECT innings_stats.match_id, matches.date, matches.venue, innings_stats.innings_number, team.name || '@' || runs || '-' || wickets || ' (' || overs || ')' AS score FROM innings_stats JOIN matches on matches.id = innings_stats.match_id JOIN team on team.id = innings_stats.batting_team_id ORDER BY date DESC, innings_number)
-SELECT matches_scores.date::text AS match_date, matches_scores.venue as match_venue, string_agg(matches_scores.score, ', ') AS match_score FROM matches_scores GROUP BY matches_scores.date, matches_scores.venue ORDER BY matches_scores.date DESC"""
-        sql_venue = """WITH matches AS (SELECT id, date, venue FROM match WHERE %s = ANY(teams) AND format = %s AND venue = %s ORDER BY date DESC LIMIT 20),
-     matches_scores AS (SELECT innings_stats.match_id, matches.date, matches.venue, innings_stats.innings_number, team.name || '@' || runs || '-' || wickets || ' (' || overs || ')' AS score FROM innings_stats JOIN matches on matches.id = innings_stats.match_id JOIN team on team.id = innings_stats.batting_team_id ORDER BY date DESC, innings_number)
-SELECT matches_scores.date::text AS match_date, matches_scores.venue AS match_venue, string_agg(matches_scores.score, ', ') AS match_score FROM matches_scores GROUP BY matches_scores.date, matches_scores.venue ORDER BY matches_scores.date DESC"""
+        sql = """WITH matches AS (SELECT id, date, venue, outcome, winning_team_id FROM match WHERE %s = ANY(teams) AND format = %s ORDER BY date DESC LIMIT 20),
+                     matches_scores AS (SELECT innings_stats.match_id, matches.date, matches.venue, matches.winning_team_id, matches.outcome, innings_stats.innings_number,team.name || '@' || runs || '-' || wickets || ' (' || overs || ')' AS score FROM innings_stats JOIN matches on matches.id = innings_stats.match_id JOIN team on team.id = innings_stats.batting_team_id ORDER BY date DESC, innings_number)
+                SELECT matches_scores.date::text AS match_date, matches_scores.venue as match_venue, matches_scores.winning_team_id AS winning_team_id, matches_scores.outcome as match_outcome, string_agg(matches_scores.score, ', ') AS match_score FROM matches_scores GROUP BY matches_scores.date, matches_scores.venue, matches_scores.winning_team_id, matches_scores.outcome ORDER BY matches_scores.date DESC"""
+        sql_venue = """WITH matches AS (SELECT id, date, venue, outcome, winning_team_id FROM match WHERE %s = ANY(teams) AND format = %s AND venue = %s ORDER BY date DESC LIMIT 20),
+                            matches_scores AS (SELECT innings_stats.match_id, matches.date, matches.venue, matches.winning_team_id, matches.outcome, innings_stats.innings_number,team.name || '@' || runs || '-' || wickets || ' (' || overs || ')' AS score FROM innings_stats JOIN matches on matches.id = innings_stats.match_id JOIN team on team.id = innings_stats.batting_team_id ORDER BY date DESC, innings_number)
+                        SELECT matches_scores.date::text AS match_date, matches_scores.venue as match_venue, matches_scores.winning_team_id AS winning_team_id, matches_scores.outcome as match_outcome, string_agg(matches_scores.score, ', ') AS match_score FROM matches_scores GROUP BY matches_scores.date, matches_scores.venue, matches_scores.winning_team_id, matches_scores.outcome ORDER BY matches_scores.date DESC"""
         team_id = self.__get_team_id(team_name)
         if team_id is None:
             return None
         self.cursor.execute(sql, (team_id, format))
-        results = self.__process_match_scores(Common.extract_query_results(self.cursor))
+        results = self.__process_match_scores(team_id, Common.extract_query_results(self.cursor))
         self.cursor.execute(sql_venue, (team_id, format, venue))
-        results_venue = self.__process_match_scores(Common.extract_query_results(self.cursor))
+        results_venue = self.__process_match_scores(team_id, Common.extract_query_results(self.cursor))
+        print(results)
         return {"overall": results, 'atVenue': results_venue}
 
-    def __process_match_scores(self, matches_scores):
+    def __process_match_scores(self, team_id, matches_scores):
         for match_score in matches_scores:
             match_innings_scores = match_score['match_score'].split(', ')
             processed_match_scores = []
@@ -405,7 +406,11 @@ SELECT matches_scores.date::text AS match_date, matches_scores.venue AS match_ve
                 innings_score = match_innings_score.split('@')
                 processed_match_scores.append({'batting_team': innings_score[0], 'innings_score': innings_score[1]})
             match_score['match_score'] = processed_match_scores
-            match_score['match_outcome'] = "Yet to be Added. Need to make changes in DB"
+            match_score['match_winning_text'] = "Yet to be Added. Need to make changes in DB"
+            if match_score['match_outcome'] == 'WIN':
+                if match_score['winning_team_id'] != team_id:
+                    match_score['match_outcome'] = 'LOSS'
+            del match_score['winning_team_id']
         return matches_scores
 
     def most_runs(self, team_squad, format, num_of_matches):
